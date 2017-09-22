@@ -32,8 +32,9 @@ public class JavaFXClient extends Application {
         Pane rootPane = new Pane();
 
         Stage stage = new Stage();
-        stage.setTitle("JavaFX Dynamic Scene Demo");
+        stage.setTitle("Room test...");
         stage.setResizable(false);
+        stage.setFullScreen(true);
         stage.setScene(new Scene(rootPane));
         stage.setWidth(1280);
         stage.setHeight(1024);
@@ -41,14 +42,14 @@ public class JavaFXClient extends Application {
         stage.show();
 
         text = new Text();
-        text.setFont(new Font("Open Sans", 300));
-        text.setText("...");
-        text.setLayoutX(200);
+        text.setFont(new Font("Open Sans", 400));
+        text.setText("");
+        text.setLayoutX(0);
         text.setLayoutY(600);
         rootPane.getChildren().add(text);
 
         Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(100),
+                Duration.millis(250),
                 ae -> doSomething()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -57,7 +58,7 @@ public class JavaFXClient extends Application {
 
     public static void doSomething() {
 
-        counter = (int) ((System.currentTimeMillis() / 1000) % 100000);
+        counter = (int) ((System.currentTimeMillis() / 250) % 100000);
 
         URL url;
         HttpURLConnection con;
