@@ -11,6 +11,12 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class JavaFXClient extends Application {
 
     public static Text text;
@@ -51,8 +57,29 @@ public class JavaFXClient extends Application {
 
     public static void doSomething() {
 
-        counter = (int) ((System.currentTimeMillis() / 100) % 100000);
-        text.setText(Integer.toString(counter));
+        counter = (int) ((System.currentTimeMillis() / 1000) % 100000);
+
+        URL url;
+        HttpURLConnection con;
+
+        try {
+            url = new URL( "http://services.farnborough.ac.uk:8081?index=" + counter);
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+            System.out.println("HTTP GET URL: " + url + ", Response Code: " + responseCode);
+            InputStream inputStream = con.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String line="";
+            while(br.ready()){
+                line = br.readLine();
+            }
+            text.setText(line);
+
+        }
+        catch (Exception ex) {
+            System.out.println("HTTP GET ERROR: " + ex.getMessage());
+        }
 
     }
 }
