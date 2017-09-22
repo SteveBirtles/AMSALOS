@@ -18,7 +18,8 @@ public class JettyServer extends AbstractHandler {
                        HttpServletResponse response) throws IOException, ServletException {
 
         int position = -1;
-        int subposition = Integer.parseInt(request.getRemoteAddr().split(".")[3]);
+
+        int subposition = Integer.parseInt(request.getRemoteAddr().split("\\.")[3]);
 
         response.setContentType("text/html; charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
@@ -26,7 +27,6 @@ public class JettyServer extends AbstractHandler {
 
         DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date dateobj = new Date();
-        System.out.println();
 
         String requestText = "[ " + request.getRemoteAddr() + "  |  " + df.format(dateobj) + "  |  ";
         requestText += request.getMethod() + " ] \t " + request.getRequestURI() + " \t ";
@@ -52,7 +52,7 @@ public class JettyServer extends AbstractHandler {
 
         if (position != -1) {
             int x = (position + (subposition * 8)) % (megastring.length() - 8);
-            String text = megastring.substring(x, 8);
+            String text = megastring.substring(x, x+8);
             response.getWriter().println(text);
         }
         else {
