@@ -19,6 +19,16 @@ import java.net.URL;
 
 public class JavaFXClient extends Application {
 
+    // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
+    //public static final String serverAddress = "services.farnborough.ac.uk";
+    //public static final boolean fullscreen = true;
+    //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
+
+    // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
+    public static final String serverAddress = "localhost";
+    public static final boolean fullscreen = false;
+    //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
+
     public static Text text;
     public static int counter = 0;
 
@@ -34,7 +44,7 @@ public class JavaFXClient extends Application {
         Stage stage = new Stage();
         stage.setTitle("Room test...");
         stage.setResizable(false);
-        stage.setFullScreen(true);
+        stage.setFullScreen(fullscreen);
         stage.setScene(new Scene(rootPane));
         stage.setWidth(1280);
         stage.setHeight(1024);
@@ -64,7 +74,7 @@ public class JavaFXClient extends Application {
         HttpURLConnection con;
 
         try {
-            url = new URL( "http://services.farnborough.ac.uk:8081?index=" + counter);
+            url = new URL( "http://" + serverAddress + ":8081?index=" + counter);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
