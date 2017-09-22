@@ -42,7 +42,7 @@ public class JavaFXClient extends Application {
         rootPane.getChildren().add(text);
 
         Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(1000),
+                Duration.millis(100),
                 ae -> doSomething()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -51,7 +51,7 @@ public class JavaFXClient extends Application {
 
     public static void doSomething() {
 
-        counter = (int) ((System.currentTimeMillis() / 1000) % 100000);
+        counter = (int) ((System.currentTimeMillis() / 100) % 100000);
         text.setText(Integer.toString(counter));
 
     }
