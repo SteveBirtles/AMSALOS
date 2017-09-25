@@ -8,10 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import org.json.simple.JSONObject;
 
@@ -103,6 +100,7 @@ public class GameServer extends AbstractHandler {
             String text = finaljson.toString();
 
             response.getWriter().println(text);
+            //System.out.println(text);
         }
         else {
             response.getWriter().println("Error!");
@@ -115,8 +113,9 @@ public class GameServer extends AbstractHandler {
     public void createEntities() {
 
         synchronized (worldentities) {
-            for (int i = 1; i <= 10; i++) {
-                worldentities.add(new Entity(i, 1, i ));
+            for (int i = 1; i <= 100; i++) {
+                Random rnd = new Random();
+                worldentities.add(new Entity(i,rnd.nextInt(160) , rnd.nextInt(16)));
             }
         }
 
