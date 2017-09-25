@@ -143,7 +143,7 @@ public class GameClient extends Application {
                 //for (Object key: jsonObject.keySet()) {
 //                if (key.toString().toLowerCase().equals("frames")) {
 
-                JSONArray frameArray = (JSONArray) jsonObject.get(frames);
+                JSONArray frameArray = (JSONArray) jsonObject.get("frames");
                 for (Object frameObject : frameArray) {
                     JSONObject frame = (JSONObject) frameObject;
 
