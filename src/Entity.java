@@ -1,10 +1,18 @@
+import java.util.HashMap;
+
 public class Entity {
-    public int id;
-    public int x;
-    public int y;
-    public Entity(int id, int x, int y) {
+    private int id;
+    public HashMap<Long, Integer> xMap;
+    public HashMap<Long, Integer> yMap;
+
+    public Entity(int id) {
         this.id = id;
-        this.x = x;
-        this.y = y;
+        this.xMap = new HashMap<>();
+        this.yMap = new HashMap<>();
     }
+
+    public int getId() {
+        return this.id;
+    }
+
 }

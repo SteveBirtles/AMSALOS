@@ -37,16 +37,16 @@ public class GameClient extends Application {
     static int viewportPosition = 0;
 
     // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
-    public static final String serverAddress = "services.farnborough.ac.uk";
-    public static final boolean fullscreen = true;
+    //public static final String serverAddress = "services.farnborough.ac.uk";
+    //public static final boolean fullscreen = true;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
-    //public static final String serverAddress = "localhost";
-    //public static final boolean fullscreen = false;
+    public static final String serverAddress = "localhost";
+    public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
-    public static int counter = 0;
+    public static long counter = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -97,7 +97,13 @@ public class GameClient extends Application {
                 synchronized (currentEntities) {
                     for (Entity e : currentEntities) {
                         //System.out.println("X: " + e.x + ", Y:" + e.y);
-                        gc.drawImage(image, e.x * 64 - viewportPosition * WINDOW_WIDTH, e.y * 64);
+                        for (long t: e.xMap.keySet()) {
+                            int x = e.xMap.get(t);
+                            int y = e.xMap.get(t);
+                            gc.drawImage(image, x * 64 - viewportPosition * WINDOW_WIDTH, y * 64);
+                            break;
+                        }
+
                     }
                 }
 
@@ -114,7 +120,7 @@ public class GameClient extends Application {
 
     public static void doSomething() {
 
-        counter = (int) ((System.currentTimeMillis() / 250) % 100000);
+        counter = System.currentTimeMillis();
 
         URL url;
         HttpURLConnection con;
@@ -136,7 +142,6 @@ public class GameClient extends Application {
             JSONObject jsonObject = (JSONObject)obj;
 
             HashMap<Long, ArrayList<Entity>> frames = new HashMap<>();
-
 
             if (jsonObject.containsKey("frames")) {
 
@@ -173,7 +178,10 @@ public class GameClient extends Application {
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
                                 //System.out.println(id + ": " + x + ", " + y);
-                                entities.add(new Entity(id, x, y));
+                                Entity newE = new Entity(id);
+                                newE.xMap.put(time, x);
+                                newE.xMap.put(time, y);
+                                entities.add(newE);
                             } else {
                                 System.out.println("Entity keys are wrong!");
                             }
@@ -206,7 +214,8 @@ public class GameClient extends Application {
 
         }
         catch (Exception ex) {
-            System.out.println("HTTP GET ERROR: " + ex.getMessage());
+            //System.out.println("HTTP GET ERROR: " + ex.getMessage());
+            ex.printStackTrace();
         }
 
     }

@@ -16,16 +16,26 @@ public class GameServer extends AbstractHandler {
 
     public final ArrayList<Entity> worldentities = new ArrayList<>();
 
+    public final int SCREENS = 1;
+
     public class EntityUpdater extends TimerTask {
 
         public void run() {
 
             //System.out.println("Updating entities");
 
+            //long firstTime = System.currentTimeMillis() / 250;
+            //firstTime *= 250;
+            //long lastTime = firstTime + 1000;
+
             synchronized (worldentities) {
                 for (Entity e: worldentities) {
-                    e.x++;
-                    if (e.x > 160) e.x -= 160;
+                    for (long t: e.xMap.keySet()) {
+                        int x = e.xMap.get(t);
+                        x++;
+                        if (x > 20 * SCREENS) x -= 20 * SCREENS;
+                        e.xMap.put(t, x);
+                    }
                 }
             }
 
@@ -37,6 +47,9 @@ public class GameServer extends AbstractHandler {
                        HttpServletResponse response) throws IOException, ServletException {
 
         int position = Integer.parseInt(request.getRemoteAddr().split("\\.")[3]);
+        long firstTime = System.currentTimeMillis() / 250;
+        firstTime *= 250;
+        long lastTime = firstTime + 1000;
 
         response.setContentType("text/html; charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
@@ -71,16 +84,16 @@ public class GameServer extends AbstractHandler {
         if (position != -1) {
 
             ArrayList<JSONObject> frames = new ArrayList<>();
-            for (int t = 1; t <= 1; t++) {
+            for (long t = firstTime; t <= lastTime; t += 250) {
 
                 ArrayList<JSONObject> entities = new ArrayList<>();
 
                 synchronized (worldentities) {
                     for (Entity e : worldentities) {
                         JSONObject entity = new JSONObject();
-                        entity.put("id", e.id);
-                        entity.put("x", e.x);
-                        entity.put("y", e.y);
+                        entity.put("id", e.getId());
+                        entity.put("x", e.xMap.get(t));
+                        entity.put("y", e.yMap.get(t));
                         entities.add(entity);
                     }
                 }
@@ -115,7 +128,10 @@ public class GameServer extends AbstractHandler {
         synchronized (worldentities) {
             for (int i = 1; i <= 100; i++) {
                 Random rnd = new Random();
-                worldentities.add(new Entity(i,rnd.nextInt(160) , rnd.nextInt(16)));
+                Entity newE = new Entity(i);
+                newE.xMap.put(0L, rnd.nextInt(20 * SCREENS));
+                newE.yMap.put(0L, rnd.nextInt(16));
+                worldentities.add(newE);
             }
         }
 
