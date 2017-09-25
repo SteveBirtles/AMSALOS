@@ -39,7 +39,7 @@ public class GameServer extends AbstractHandler {
     public void handle(String target, Request baseRequest, HttpServletRequest request,
                        HttpServletResponse response) throws IOException, ServletException {
 
-        int position = -1;
+        int position = Integer.parseInt(request.getRemoteAddr().split("\\.")[3]);
 
         response.setContentType("text/html; charset=utf-8");
         response.setStatus(HttpServletResponse.SC_OK);
@@ -59,7 +59,8 @@ public class GameServer extends AbstractHandler {
                     String value = q.split("=")[1];
                     requestText += "   " + variable + " = " + value;
 
-                    if (variable.equals("index")) position = Integer.parseInt(value);
+                    //if (variable.equals("index")) position = Integer.parseInt(value);
+
                 } else {
                     requestText += "   Invalid query string component (" + q + ")";
                 }
