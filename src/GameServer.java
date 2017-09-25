@@ -28,7 +28,7 @@ public class GameServer extends AbstractHandler {
             synchronized (worldentities) {
                 for (Entity e: worldentities) {
                     e.x++;
-                    if (e.x > 20) e.x -= 20;
+                    if (e.x > 160) e.x -= 160;
                 }
             }
 

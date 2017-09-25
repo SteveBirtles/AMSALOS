@@ -37,13 +37,13 @@ public class GameClient extends Application {
     static int viewportPosition = 0;
 
     // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
-    //public static final String serverAddress = "services.farnborough.ac.uk";
-    //public static final boolean fullscreen = true;
+    public static final String serverAddress = "services.farnborough.ac.uk";
+    public static final boolean fullscreen = true;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
-    public static final String serverAddress = "localhost";
-    public static final boolean fullscreen = false;
+    //public static final String serverAddress = "localhost";
+    //public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     public static int counter = 0;
