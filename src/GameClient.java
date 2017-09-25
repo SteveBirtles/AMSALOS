@@ -46,8 +46,6 @@ public class GameClient extends Application {
     public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
-    public static long counter = 0;
-
     public static void main(String[] args) {
         launch(args);
     }
@@ -94,15 +92,41 @@ public class GameClient extends Application {
                 gc.setFill(Color.BLACK);
                 gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+                long time = System.currentTimeMillis() >> 8;
+                double offset = (System.currentTimeMillis() % 256) / 256.0;
+
                 synchronized (currentEntities) {
                     for (Entity e : currentEntities) {
                         //System.out.println("X: " + e.x + ", Y:" + e.y);
+
+                        int x0 = -1;
+                        int y0 = -1;
+                        int x1 = -1;
+                        int y1 = -1;
+
+                        //System.out.print("[" + time + "] " + e.getId() + ": ");
                         for (long t: e.xMap.keySet()) {
-                            int x = e.xMap.get(t);
-                            int y = e.xMap.get(t);
-                            gc.drawImage(image, x * 64 - viewportPosition * WINDOW_WIDTH, y * 64);
-                            break;
+                            //System.out.print(t + ", ");
+                            if (t == time) {
+                                x0 = e.xMap.get(t);
+                                y0 = e.yMap.get(t);
+                            }
+                            else if (t == time + 1) {
+                                x1 = e.xMap.get(t);
+                                y1 = e.yMap.get(t);
+                            }
                         }
+
+                        //System.out.println();
+
+                        if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
+                            int x = (int) (64.0 * (x0 + offset * (x1 - x0)));
+                            int y = (int) (64.0 * (y0 + offset * (y1 - y0)));
+                            gc.drawImage(image, x - viewportPosition * WINDOW_WIDTH, y );
+                        }
+                        //else {
+                        //    System.out.println(time + ": " + x0 + ", " + y0 + ", " + x1 + ", " + y1);
+                        //}
 
                     }
                 }
@@ -111,37 +135,41 @@ public class GameClient extends Application {
         }.start();
 
         Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(250),
-                ae -> doSomething()));
+                Duration.millis(256),
+                ae -> getUpdate()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
     }
 
-    public static void doSomething() {
+    public static void getUpdate() {
 
-        counter = System.currentTimeMillis();
+        long clientTime = System.currentTimeMillis() >> 8;
+        HashMap<Integer, Entity> entities = new HashMap<>();
 
         URL url;
         HttpURLConnection con;
 
         try {
-            url = new URL( "http://" + serverAddress + ":8081?index=" + counter);
+            url = new URL( "http://" + serverAddress + ":8081?index=" + clientTime);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
-            System.out.println("HTTP GET URL: " + url + ", Response Code: " + responseCode);
+            //System.out.println("HTTP GET URL: " + url + ", Response Code: " + responseCode);
             InputStream inputStream = con.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             String inputjson="";
             while(br.ready()){
                 inputjson = br.readLine();
             }
+
+            //System.out.println("RECEIVED: " + inputjson);
+
             JSONParser parser = new JSONParser();
             Object obj = parser.parse(inputjson);
             JSONObject jsonObject = (JSONObject)obj;
 
-            HashMap<Long, ArrayList<Entity>> frames = new HashMap<>();
+            //HashMap<Long, ArrayList<Entity>> frames = new HashMap<>();
 
             if (jsonObject.containsKey("frames")) {
 
@@ -153,7 +181,6 @@ public class GameClient extends Application {
                     JSONObject frame = (JSONObject) frameObject;
 
                     long time = -1;
-                    ArrayList<Entity> entities = new ArrayList<>();
 
                     if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
 
@@ -178,10 +205,17 @@ public class GameClient extends Application {
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
                                 //System.out.println(id + ": " + x + ", " + y);
-                                Entity newE = new Entity(id);
-                                newE.xMap.put(time, x);
-                                newE.xMap.put(time, y);
-                                entities.add(newE);
+
+                                if (entities.containsKey(id)) {
+                                    entities.get(id).xMap.put(time, x);
+                                    entities.get(id).yMap.put(time, y);
+                                }
+                                else {
+                                    Entity newE = new Entity(id);
+                                    newE.xMap.put(time, x);
+                                    newE.yMap.put(time, y);
+                                    entities.put(id, newE);
+                                }
                             } else {
                                 System.out.println("Entity keys are wrong!");
                             }
@@ -190,9 +224,9 @@ public class GameClient extends Application {
 
                     }
 
-                    if (time != -1 && entities.size() > 0) {
-                        frames.put(time, entities);
-                    }
+                    //if (time != -1 && entities.size() > 0) {
+                    //    frames.put(time, entities);
+                    //}
 
                 }
 
@@ -200,16 +234,16 @@ public class GameClient extends Application {
 
 
 
-            for (Long t: frames.keySet()) {
+            //for (Long t: frames.keySet()) {
                 synchronized (currentEntities) {
                     currentEntities.clear();
-                    for (Entity e: frames.get(t)) {
+                    for (Entity e: entities.values()) {
                         currentEntities.add(e);
                         //System.out.println("Id: " + e.id + ", X: " + e.x + ", Y: " + e.y);
                     }
                 }
-                break;
-            }
+                //break;
+            //}
 
 
         }
