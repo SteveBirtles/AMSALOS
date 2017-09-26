@@ -38,12 +38,12 @@ public class GameClient extends Application {
 
     // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
     //public static final String serverAddress = "services.farnborough.ac.uk";
-    //public static final boolean fullscreen = true;
+    public static final boolean fullscreen = true;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
     public static final String serverAddress = "localhost";
-    public static final boolean fullscreen = false;
+    //public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     public static void main(String[] args) {
@@ -79,7 +79,22 @@ public class GameClient extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.WHITE);
 
-        Image image = new Image("/sprite.png");
+        Image[] sprite = new Image[6];
+
+        sprite[0] = new Image("resources/sprite1.png");
+        sprite[1] = new Image("resources/sprite2.png");
+        sprite[2] = new Image("resources/sprite3.png");
+        sprite[3] = new Image("resources/sprite4.png");
+        sprite[4] = new Image("resources/sprite5.png");
+        sprite[5] = new Image("resources/sprite6.png");
+
+        Image[] tile = new Image[4];
+
+        tile[0] = new Image("resources/tile1.png");
+        tile[1] = new Image("resources/tile2.png");
+        tile[2] = new Image("resources/tile3.png");
+        tile[3] = new Image("resources/tile4.png");
+
 
         new AnimationTimer() {
             @Override
@@ -91,6 +106,13 @@ public class GameClient extends Application {
 
                 gc.setFill(Color.BLACK);
                 gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+                for (int x = 0; x < 20; x++) {
+                    for (int y = 0; y < 20; y++) {
+                        int t = (x + 21*y) % 4;
+                        gc.drawImage(tile[t], x*64, y*64);
+                    }
+                }
 
                 long time = System.currentTimeMillis() >> 8;
                 double offset = (System.currentTimeMillis() % 256) / 256.0;
@@ -117,12 +139,14 @@ public class GameClient extends Application {
                             }
                         }
 
+                        int imageNo = e.getType() - 1;
+
                         //System.out.println();
 
                         if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
                             int x = (int) (64.0 * (x0 + offset * (x1 - x0)));
                             int y = (int) (64.0 * (y0 + offset * (y1 - y0)));
-                            gc.drawImage(image, x - viewportPosition * WINDOW_WIDTH, y );
+                            gc.drawImage(sprite[imageNo], x - viewportPosition * WINDOW_WIDTH, y );
                         }
                         //else {
                         //    System.out.println(time + ": " + x0 + ", " + y0 + ", " + x1 + ", " + y1);
@@ -135,7 +159,7 @@ public class GameClient extends Application {
         }.start();
 
         Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(256),
+                Duration.millis(512),
                 ae -> getUpdate()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -202,6 +226,7 @@ public class GameClient extends Application {
                             //System.out.println(entity);
                             if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
                                 int id = Integer.parseInt(entity.get("id").toString());
+                                int type = Integer.parseInt(entity.get("type").toString());
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
                                 //System.out.println(id + ": " + x + ", " + y);
@@ -211,7 +236,7 @@ public class GameClient extends Application {
                                     entities.get(id).yMap.put(time, y);
                                 }
                                 else {
-                                    Entity newE = new Entity(id);
+                                    Entity newE = new Entity(id, type);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
                                     entities.put(id, newE);

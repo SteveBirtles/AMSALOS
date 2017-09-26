@@ -15,7 +15,8 @@ import org.json.simple.JSONObject;
 public class GameServer extends AbstractHandler {
 
     public final ArrayList<Entity> worldentities = new ArrayList<>();
-    public final int SCREENS = 1;
+    public final int SCREENS = 8;
+    public final int ENTITIY_COUNT = 100;
 
     public class EntityUpdater extends TimerTask {
 
@@ -44,15 +45,14 @@ public class GameServer extends AbstractHandler {
                         int x = e.xMap.get(last);
                         int y = e.yMap.get(last);
 
-                        Random rnd = new Random();
-                        switch (rnd.nextInt(4)) {
-                            case 0: x++; if (x > 19) x = 19; break;
-                            case 1: y++; if (y > 15) y = 15; break;
-                            case 2: x--; if (x < 0) x = 0; break;
-                            case 3: y--; if (y < 0) y = 0; break;
-                        }
+                        x += e.dx;
+                        y += e.dy;
 
-                        //if (x >= 20 * SCREENS) x -= 20 * SCREENS;
+                        if (x <= 0 && e.dx < 0) e.dx = -e.dx;
+                        if (y <= 0 && e.dy < 0) e.dy = -e.dy;
+
+                        if (x >= (20 * SCREENS) - 1 && e.dx > 0) e.dx = -e.dx;
+                        if (y >= 15 && e.dy > 0) e.dy = -e.dy;
 
                         e.xMap.put(future, x);
                         e.yMap.put(future, y);
@@ -74,7 +74,13 @@ public class GameServer extends AbstractHandler {
     public void handle(String target, Request baseRequest, HttpServletRequest request,
                        HttpServletResponse response) throws IOException, ServletException {
 
-        int position = Integer.parseInt(request.getRemoteAddr().split("\\.")[3]);
+        String[] ip = request.getRemoteAddr().split("\\.");
+
+        int position = 1;
+
+        if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
+            position = Integer.parseInt(ip[3]);
+        }
 
         long time = System.currentTimeMillis() >> 8;
 
@@ -123,6 +129,7 @@ public class GameServer extends AbstractHandler {
                         if (e.xMap.containsKey(t)) {
                             JSONObject entity = new JSONObject();
                             entity.put("id", e.getId());
+                            entity.put("type", e.getType());
                             entity.put("x", e.xMap.get(t));
                             entity.put("y", e.yMap.get(t));
                             entities.add(entity);
@@ -160,11 +167,47 @@ public class GameServer extends AbstractHandler {
         long t = System.currentTimeMillis() >> 8;
 
         synchronized (worldentities) {
-            for (int i = 1; i <= 10; i++) {
+            for (int i = 1; i <= ENTITIY_COUNT; i++) {
                 Random rnd = new Random();
-                Entity newE = new Entity(i);
+                Entity newE = new Entity(i, rnd.nextInt(6) + 1);
                 newE.xMap.put(t, rnd.nextInt(20 * SCREENS));
                 newE.yMap.put(t, rnd.nextInt(16));
+
+                switch (rnd.nextInt(8)) {
+                    case 0:
+                        newE.dx = 1;
+                        newE.dy = -1;
+                        break;
+                    case 1:
+                        newE.dx = 1;
+                        newE.dy = 0;
+                        break;
+                    case 2:
+                        newE.dx = 1;
+                        newE.dy = 1;
+                        break;
+                    case 3:
+                        newE.dx = 0;
+                        newE.dy = 1;
+                        break;
+                    case 4:
+                        newE.dx = -1;
+                        newE.dy = 1;
+                        break;
+                    case 5:
+                        newE.dx = -1;
+                        newE.dy = 0;
+                        break;
+                    case 6:
+                        newE.dx = -1;
+                        newE.dy = -1;
+                        break;
+                    case 7:
+                        newE.dx = 0;
+                        newE.dy = -1;
+                        break;
+                }
+
                 worldentities.add(newE);
             }
         }
@@ -187,3 +230,4 @@ public class GameServer extends AbstractHandler {
     }
 
 }
+
