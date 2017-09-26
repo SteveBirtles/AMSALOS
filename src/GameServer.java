@@ -1,3 +1,4 @@
+import Steve.QuickMazeMaker;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -17,6 +18,9 @@ public class GameServer extends AbstractHandler {
     public final ArrayList<Entity> worldentities = new ArrayList<>();
     public final int SCREENS = 8;
     public final int ENTITIY_COUNT = 100;
+
+    private int[][] map = null;
+    private final String[] encodedMap = new String[SCREENS];
 
     public class EntityUpdater extends TimerTask {
 
@@ -77,6 +81,7 @@ public class GameServer extends AbstractHandler {
         String[] ip = request.getRemoteAddr().split("\\.");
 
         int position = 1;
+        boolean sendMap = false;
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
             position = Integer.parseInt(ip[3]);
@@ -103,6 +108,7 @@ public class GameServer extends AbstractHandler {
                     requestText += "   " + variable + " = " + value;
 
                     //if (variable.equals("index")) position = Integer.parseInt(value);
+                    if (variable.equals("map")) sendMap = value.toLowerCase().equals("true");
 
                 } else {
                     requestText += "   Invalid query string component (" + q + ")";
@@ -148,6 +154,8 @@ public class GameServer extends AbstractHandler {
 
             JSONObject finaljson = new JSONObject();
             finaljson.put("frames", frames);
+
+            if (sendMap) finaljson.put("map", encodedMap[position-1]);
 
             String text = finaljson.toString();
 
@@ -217,9 +225,27 @@ public class GameServer extends AbstractHandler {
 
     }
 
+    public void createMap() {
+
+        map = QuickMazeMaker.makeMake(20 * SCREENS, 16);
+
+        for (int s = 1; s <= SCREENS; s++) {
+            StringBuilder mapScreen = new StringBuilder();
+            for (int x = 20*(s-1); x < 20*s; x++) {
+                for (int y = 0; y < 16; y++) {
+                    mapScreen.append(map[x][y] + ",");
+                }
+            }
+            encodedMap[s-1] = mapScreen.toString();
+        }
+
+
+    }
+
     public static void main(String[] args) throws Exception {
 
         GameServer gameServer = new GameServer();
+        gameServer.createMap();
         gameServer.createEntities();
 
         Server server = new Server(8081);

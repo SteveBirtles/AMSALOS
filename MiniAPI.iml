@@ -10,5 +10,6 @@
     <orderEntry type="library" name="jetty-all" level="project" />
     <orderEntry type="library" name="httpclient-4.5.3" level="project" />
     <orderEntry type="library" name="json-simple-1.1.1" level="project" />
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
   </component>
 </module>

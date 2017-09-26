@@ -1,3 +1,4 @@
+import Steve.QuickMazeMaker;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
@@ -37,14 +38,16 @@ public class GameClient extends Application {
     static int viewportPosition = 0;
 
     // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
-    public static final String serverAddress = "services.farnborough.ac.uk";
-    public static final boolean fullscreen = true;
+    //public static final String serverAddress = "services.farnborough.ac.uk";
+    //public static final boolean fullscreen = true;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
-    //public static final String serverAddress = "localhost";
-    //public static final boolean fullscreen = false;
+    public static final String serverAddress = "localhost";
+    public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
+
+    public static int[][] map = null;
 
     public static void main(String[] args) {
         launch(args);
@@ -95,7 +98,6 @@ public class GameClient extends Application {
         tile[2] = new Image("resources/tile3.png");
         tile[3] = new Image("resources/tile4.png");
 
-
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -107,10 +109,11 @@ public class GameClient extends Application {
                 gc.setFill(Color.BLACK);
                 gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-                for (int x = 0; x < 20; x++) {
-                    for (int y = 0; y < 20; y++) {
-                        int t = (x + 21*y) % 4;
-                        gc.drawImage(tile[t], x*64, y*64);
+                if (map != null) {
+                    for (int x = 0; x < 20; x++) {
+                        for (int y = 0; y < 16; y++) {
+                            gc.drawImage(tile[map[x][y]], x * 64, y * 64);
+                        }
                     }
                 }
 
@@ -175,7 +178,9 @@ public class GameClient extends Application {
         HttpURLConnection con;
 
         try {
-            url = new URL( "http://" + serverAddress + ":8081?index=" + clientTime);
+            url = new URL( "http://" + serverAddress + ":8081"
+                                + "?index=" + clientTime
+                                + "&map=" + (map == null ? "true" : "false"));
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
@@ -194,6 +199,26 @@ public class GameClient extends Application {
             JSONObject jsonObject = (JSONObject)obj;
 
             //HashMap<Long, ArrayList<Entity>> frames = new HashMap<>();
+
+            if (jsonObject.containsKey("map")) {
+
+                map = QuickMazeMaker.emptyMap(20, 16);
+
+                String mapString = jsonObject.get("map").toString();
+
+                int x = 0;
+                int y = 0;
+                for (String value: mapString.split(",")) {
+                    map[x][y] = Integer.parseInt(value);
+                    x++;
+                    if (x == 20) {
+                        x = 0;
+                        y++;
+                        if (y == 16) break;
+                    }
+                }
+
+            }
 
             if (jsonObject.containsKey("frames")) {
 
