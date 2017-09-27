@@ -32,6 +32,8 @@ public class GameClient extends Application {
 
     public static final int WINDOW_WIDTH = 1280;
     public static final int WINDOW_HEIGHT = 1024;
+    public static final int MAX_X = 21;
+    public static final int MAX_Y = 17;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
@@ -39,12 +41,12 @@ public class GameClient extends Application {
 
     // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
     //public static final String serverAddress = "services.farnborough.ac.uk";
-    //public static final boolean fullscreen = true;
+    public static final boolean fullscreen = true;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
     public static final String serverAddress = "localhost";
-    public static final boolean fullscreen = false;
+    //public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     public static int[][] map = null;
@@ -110,9 +112,9 @@ public class GameClient extends Application {
                 gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
                 if (map != null) {
-                    for (int x = 0; x < 20; x++) {
-                        for (int y = 0; y < 16; y++) {
-                            gc.drawImage(tile[map[x][y]], x * 64, y * 64);
+                    for (int x = 0; x < MAX_X; x++) {
+                        for (int y = 0; y < MAX_Y; y++) {
+                            gc.drawImage(tile[map[x][y]], x * 64 - 32, y * 64 - 32);
                         }
                     }
                 }
@@ -122,16 +124,13 @@ public class GameClient extends Application {
 
                 synchronized (currentEntities) {
                     for (Entity e : currentEntities) {
-                        //System.out.println("X: " + e.x + ", Y:" + e.y);
 
                         int x0 = -1;
                         int y0 = -1;
                         int x1 = -1;
                         int y1 = -1;
 
-                        //System.out.print("[" + time + "] " + e.getId() + ": ");
                         for (long t: e.xMap.keySet()) {
-                            //System.out.print(t + ", ");
                             if (t == time) {
                                 x0 = e.xMap.get(t);
                                 y0 = e.yMap.get(t);
@@ -144,16 +143,11 @@ public class GameClient extends Application {
 
                         int imageNo = e.getType() - 1;
 
-                        //System.out.println();
-
                         if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
-                            int x = (int) (64.0 * (x0 + offset * (x1 - x0)));
-                            int y = (int) (64.0 * (y0 + offset * (y1 - y0)));
+                            int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
+                            int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
                             gc.drawImage(sprite[imageNo], x - viewportPosition * WINDOW_WIDTH, y );
                         }
-                        //else {
-                        //    System.out.println(time + ": " + x0 + ", " + y0 + ", " + x1 + ", " + y1);
-                        //}
 
                     }
                 }
@@ -184,7 +178,6 @@ public class GameClient extends Application {
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
-            //System.out.println("HTTP GET URL: " + url + ", Response Code: " + responseCode);
             InputStream inputStream = con.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             String inputjson="";
@@ -192,17 +185,13 @@ public class GameClient extends Application {
                 inputjson = br.readLine();
             }
 
-            //System.out.println("RECEIVED: " + inputjson);
-
             JSONParser parser = new JSONParser();
             Object obj = parser.parse(inputjson);
             JSONObject jsonObject = (JSONObject)obj;
 
-            //HashMap<Long, ArrayList<Entity>> frames = new HashMap<>();
-
             if (jsonObject.containsKey("map")) {
 
-                map = QuickMazeMaker.emptyMap(20, 16);
+                map = QuickMazeMaker.emptyMap(MAX_X, MAX_Y);
 
                 String mapString = jsonObject.get("map").toString();
 
@@ -211,19 +200,16 @@ public class GameClient extends Application {
                 for (String value: mapString.split(",")) {
                     map[x][y] = Integer.parseInt(value);
                     x++;
-                    if (x == 20) {
+                    if (x == MAX_X) {
                         x = 0;
                         y++;
-                        if (y == 16) break;
+                        if (y == MAX_Y) break;
                     }
                 }
 
             }
 
             if (jsonObject.containsKey("frames")) {
-
-                //for (Object key: jsonObject.keySet()) {
-//                if (key.toString().toLowerCase().equals("frames")) {
 
                 JSONArray frameArray = (JSONArray) jsonObject.get("frames");
                 for (Object frameObject : frameArray) {
@@ -233,28 +219,19 @@ public class GameClient extends Application {
 
                     if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
 
-                        //for (Object frameKey: frame.keySet()) {
-                        //    String frameKeyString = frameKey.toString().toLowerCase();
-                        //if (frameKeyString.equals("time")) {
-
                         time = Long.parseLong(frame.get("time").toString());
 
                         viewportPosition = Integer.parseInt(frame.get("position").toString()) - 1;
-
-                        //}
-                        //else if (frameKeyString.equals("entities")) {
 
                         JSONArray entityArray = (JSONArray) frame.get("entities");
 
                         for (Object entityObject : entityArray) {
                             JSONObject entity = (JSONObject) entityObject;
-                            //System.out.println(entity);
                             if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
                                 int id = Integer.parseInt(entity.get("id").toString());
                                 int type = Integer.parseInt(entity.get("type").toString());
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
-                                //System.out.println(id + ": " + x + ", " + y);
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
@@ -270,35 +247,18 @@ public class GameClient extends Application {
                                 System.out.println("Entity keys are wrong!");
                             }
                         }
-                        //}
-
                     }
-
-                    //if (time != -1 && entities.size() > 0) {
-                    //    frames.put(time, entities);
-                    //}
-
                 }
-
             }
 
-
-
-            //for (Long t: frames.keySet()) {
-                synchronized (currentEntities) {
-                    currentEntities.clear();
-                    for (Entity e: entities.values()) {
-                        currentEntities.add(e);
-                        //System.out.println("Id: " + e.id + ", X: " + e.x + ", Y: " + e.y);
-                    }
+            synchronized (currentEntities) {
+                currentEntities.clear();
+                for (Entity e : entities.values()) {
+                    currentEntities.add(e);
                 }
-                //break;
-            //}
-
-
+            }
         }
         catch (Exception ex) {
-            //System.out.println("HTTP GET ERROR: " + ex.getMessage());
             ex.printStackTrace();
         }
 

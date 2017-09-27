@@ -1,4 +1,3 @@
-import Steve.QuickMazeMaker;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -12,19 +11,25 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.json.simple.JSONObject;
+import static Nessy.Gen1.generate;
 
 public class GameServer extends AbstractHandler {
 
     public final ArrayList<Entity> worldentities = new ArrayList<>();
-    public final int SCREENS = 8;
-    public final int ENTITIY_COUNT = 100;
+    public final int ENTITY_COUNT = 100;
+    public final int MAX_X = 401;
+    public final int MAX_Y = 17;
+    public final int SCREEN_COUNT = 20;
+    public final int SCREEN_WIDTH = 20;
 
     private int[][] map = null;
-    private final String[] encodedMap = new String[SCREENS];
+    private final String[] encodedMap = new String[SCREEN_COUNT];
 
     public class EntityUpdater extends TimerTask {
 
         public void run() {
+
+            Random rnd = new Random();
 
             long present = System.currentTimeMillis() >> 8;
             long future = present + 4;
@@ -33,8 +38,6 @@ public class GameServer extends AbstractHandler {
             synchronized (worldentities) {
                 for (Entity e: worldentities) {
 
-                    //System.out.println("KEYS: " + e.xMap.keySet());
-
                     long first = future;
                     long last = 0;
                     for (long l: e.xMap.keySet()) {
@@ -42,21 +45,32 @@ public class GameServer extends AbstractHandler {
                         if (l < first) first = l;
                     }
 
-                    //System.out.println(last);
-
                     if (future != last && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
 
                         int x = e.xMap.get(last);
                         int y = e.yMap.get(last);
 
-                        x += e.dx;
-                        y += e.dy;
+                        int target_x = x + e.dx;
+                        int target_y = y + e.dy;
 
-                        if (x <= 0 && e.dx < 0) e.dx = -e.dx;
-                        if (y <= 0 && e.dy < 0) e.dy = -e.dy;
+                        boolean[] clearDirections = new boolean[4];
+                        clearDirections[0] = y > 0 && map[x][y-1] < 128;
+                        clearDirections[1] = x < MAX_X-1 && map[x+1][y] < 128;
+                        clearDirections[2] = y < MAX_Y-1 && map[x][y+1] < 128;
+                        clearDirections[3] = x > 0 && map[x-1][y] < 128;
 
-                        if (x >= (20 * SCREENS) - 1 && e.dx > 0) e.dx = -e.dx;
-                        if (y >= 15 && e.dy > 0) e.dy = -e.dy;
+                        if (target_x < 0 || target_y < 0
+                            || target_x >= MAX_X || target_y >= MAX_Y
+                            || map[target_x][target_y] > 127)
+                        {
+                            e.pickRandomDirection(clearDirections, rnd);
+                        }
+                        else {
+
+                            x = target_x;
+                            y = target_y;
+
+                        }
 
                         e.xMap.put(future, x);
                         e.yMap.put(future, y);
@@ -107,7 +121,6 @@ public class GameServer extends AbstractHandler {
                     String value = q.split("=")[1];
                     requestText += "   " + variable + " = " + value;
 
-                    //if (variable.equals("index")) position = Integer.parseInt(value);
                     if (variable.equals("map")) sendMap = value.toLowerCase().equals("true");
 
                 } else {
@@ -175,46 +188,26 @@ public class GameServer extends AbstractHandler {
         long t = System.currentTimeMillis() >> 8;
 
         synchronized (worldentities) {
-            for (int i = 1; i <= ENTITIY_COUNT; i++) {
+            for (int i = 1; i <= ENTITY_COUNT; i++) {
                 Random rnd = new Random();
                 Entity newE = new Entity(i, rnd.nextInt(6) + 1);
-                newE.xMap.put(t, rnd.nextInt(20 * SCREENS));
-                newE.yMap.put(t, rnd.nextInt(16));
 
-                switch (rnd.nextInt(8)) {
-                    case 0:
-                        newE.dx = 1;
-                        newE.dy = -1;
-                        break;
-                    case 1:
-                        newE.dx = 1;
-                        newE.dy = 0;
-                        break;
-                    case 2:
-                        newE.dx = 1;
-                        newE.dy = 1;
-                        break;
-                    case 3:
-                        newE.dx = 0;
-                        newE.dy = 1;
-                        break;
-                    case 4:
-                        newE.dx = -1;
-                        newE.dy = 1;
-                        break;
-                    case 5:
-                        newE.dx = -1;
-                        newE.dy = 0;
-                        break;
-                    case 6:
-                        newE.dx = -1;
-                        newE.dy = -1;
-                        break;
-                    case 7:
-                        newE.dx = 0;
-                        newE.dy = -1;
-                        break;
-                }
+                int x, y;
+                do {
+                    x = rnd.nextInt(MAX_X);
+                    y = rnd.nextInt(MAX_Y);
+                } while (map[x][y] > 127);
+
+                newE.xMap.put(t, x);
+                newE.yMap.put(t, y);
+
+                boolean[] clearDirections = new boolean[4];
+                clearDirections[0] = y > 0 && map[x][y-1] < 128;
+                clearDirections[1] = x < MAX_X-1 && map[x+1][y] < 128;
+                clearDirections[2] = y < MAX_Y-1 && map[x][y+1] < 128;
+                clearDirections[3] = x > 0 && map[x-1][y] < 128;
+
+                newE.pickRandomDirection(clearDirections, rnd);
 
                 worldentities.add(newE);
             }
@@ -227,12 +220,12 @@ public class GameServer extends AbstractHandler {
 
     public void createMap() {
 
-        map = QuickMazeMaker.makeMake(20 * SCREENS, 16);
+        map = generate(MAX_X, MAX_Y);
 
-        for (int s = 0; s < SCREENS; s++) {
+        for (int s = 0; s < SCREEN_COUNT; s++) {
             StringBuilder mapScreen = new StringBuilder();
-            for (int y = 0; y < 16; y++) {
-                for (int x = 20*s; x < 20*(s+1); x++) {
+            for (int y = 0; y < MAX_Y; y++) {
+                for (int x = SCREEN_WIDTH*s; x < SCREEN_WIDTH*(s+1)+1; x++) {
                     mapScreen.append(map[x][y] + ",");
                 }
             }

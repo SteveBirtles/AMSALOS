@@ -17,13 +17,11 @@ public class QuickMazeMaker {
             int x = rnd.nextInt(width);
             int y = rnd.nextInt(height);
             for (int z = 0; z < l; z++) {
-                //System.out.print("(" + x + ", " + y + "), ");
                 maze[x][y] = 128;
                 x += dx;
                 y += dy;
                 if (x < 0 || y < 0 || x >= width || y >= height) break;
             }
-            //System.out.println();
         }
 
         for (int x = 0; x < width; x++) {
