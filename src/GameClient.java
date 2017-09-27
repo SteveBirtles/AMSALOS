@@ -35,6 +35,8 @@ public class GameClient extends Application {
     public static final int MAX_X = 21;
     public static final int MAX_Y = 17;
 
+    public static int screen = 0;
+
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
     static int viewportPosition = 0;
@@ -105,7 +107,43 @@ public class GameClient extends Application {
             public void handle(long now) {
 
                 for(KeyCode k : keysPressed) {
+
                     if (k == KeyCode.ESCAPE) System.exit(0);
+
+                    int last_screen = screen;
+
+                    if (k == KeyCode.TAB) screen = 0;
+
+                    if (k == KeyCode.Q) screen = 1;
+                    if (k == KeyCode.W) screen = 2;
+                    if (k == KeyCode.E) screen = 3;
+                    if (k == KeyCode.R) screen = 4;
+                    if (k == KeyCode.T) screen = 5;
+
+                    if (k == KeyCode.Y) screen = 6;
+                    if (k == KeyCode.U) screen = 7;
+                    if (k == KeyCode.I) screen = 8;
+                    if (k == KeyCode.O) screen = 9;
+                    if (k == KeyCode.P) screen = 10;
+
+                    if (k == KeyCode.A) screen = 11;
+                    if (k == KeyCode.S) screen = 12;
+                    if (k == KeyCode.D) screen = 13;
+                    if (k == KeyCode.F) screen = 14;
+                    if (k == KeyCode.G) screen = 15;
+
+                    if (k == KeyCode.H) screen = 16;
+                    if (k == KeyCode.J) screen = 17;
+                    if (k == KeyCode.K) screen = 18;
+                    if (k == KeyCode.L) screen = 19;
+                    if (k == KeyCode.SEMICOLON) screen = 20;
+
+                    if (screen != last_screen) {
+                        map = null;
+                        last_screen = screen;
+                        currentEntities.clear();
+                    }
+
                 }
 
                 gc.setFill(Color.BLACK);
@@ -174,7 +212,8 @@ public class GameClient extends Application {
         try {
             url = new URL( "http://" + serverAddress + ":8081"
                                 + "?index=" + clientTime
-                                + "&map=" + (map == null ? "true" : "false"));
+                                + "&map=" + (map == null ? "true" : "false")
+                                + "&screen=" + screen);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();

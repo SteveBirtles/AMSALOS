@@ -122,6 +122,12 @@ public class GameServer extends AbstractHandler {
                     requestText += "   " + variable + " = " + value;
 
                     if (variable.equals("map")) sendMap = value.toLowerCase().equals("true");
+                    if (variable.equals("screen")) {
+                        int screen = Integer.parseInt(value);
+                        if (screen != 0) {
+                            position = screen;
+                        }
+                    }
 
                 } else {
                     requestText += "   Invalid query string component (" + q + ")";
