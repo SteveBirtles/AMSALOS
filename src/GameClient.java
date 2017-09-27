@@ -40,15 +40,11 @@ public class GameClient extends Application {
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
     static int viewportPosition = 0;
-
-    // - - - - - - - - DEPLOYED SETTINGS - - - - - - - - //
-    //public static final String serverAddress = "services.farnborough.ac.uk";
     public static final boolean fullscreen = true;
-    //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
-    // - - - - - - - - DEVELOPMENT SETTINGS  - - - - - //
+    // - - - - - - - - SERVER SETTINGS - - - - - - - - -  //
+    //public static final String serverAddress = "services.farnborough.ac.uk";
     public static final String serverAddress = "localhost";
-    //public static final boolean fullscreen = false;
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     public static int[][] map = null;

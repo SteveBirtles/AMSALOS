@@ -58,18 +58,33 @@ public class GameServer extends AbstractHandler {
                         clearDirections[1] = x < MAX_X-1 && map[x+1][y] < 128;
                         clearDirections[2] = y < MAX_Y-1 && map[x][y+1] < 128;
                         clearDirections[3] = x > 0 && map[x-1][y] < 128;
+                        int noOfClearDirections = Entity.noOfClearDirections(clearDirections);
+
+                        boolean[] clearDiagonals = new boolean[4];
+                        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && map[x+1][y-1] < 128;
+                        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && map[x+1][y+1] < 128;
+                        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && map[x-1][y+1] < 128;
+                        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && map[x-1][y-1] < 128;
+                        int noOfClearDiagonals = Entity.noOfClearDirections(clearDiagonals);
 
                         if (target_x < 0 || target_y < 0
-                            || target_x >= MAX_X || target_y >= MAX_Y
-                            || map[target_x][target_y] > 127)
+                                || target_x >= MAX_X || target_y >= MAX_Y
+                                || (noOfClearDirections == 3 && noOfClearDiagonals < 3)
+                                || map[target_x][target_y] > 127)
                         {
+                            if (noOfClearDirections > 1) {
+                                if (e.dy > 0) clearDirections[0] = false;
+                                if (e.dx < 0) clearDirections[1] = false;
+                                if (e.dy < 0) clearDirections[2] = false;
+                                if (e.dx > 0) clearDirections[3] = false;
+                            }
                             e.pickRandomDirection(clearDirections, rnd);
+                            x += e.dx;
+                            y += e.dy;
                         }
                         else {
-
                             x = target_x;
                             y = target_y;
-
                         }
 
                         e.xMap.put(future, x);
