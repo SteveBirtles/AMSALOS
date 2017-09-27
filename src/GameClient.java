@@ -91,12 +91,12 @@ public class GameClient extends Application {
         sprite[4] = new Image("resources/sprite5.png");
         sprite[5] = new Image("resources/sprite6.png");
 
-        Image[] tile = new Image[4];
+        Image[] tile = new Image[256];
 
-        tile[0] = new Image("resources/tile1.png");
-        tile[1] = new Image("resources/tile2.png");
-        tile[2] = new Image("resources/tile3.png");
-        tile[3] = new Image("resources/tile4.png");
+        tile[0] = new Image("resources/tile2.png");
+        tile[128] = new Image("resources/tile4.png");
+        tile[129] = new Image("resources/tile1.png");
+        tile[130] = new Image("resources/tile3.png");
 
         new AnimationTimer() {
             @Override

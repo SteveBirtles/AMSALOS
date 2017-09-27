@@ -229,14 +229,14 @@ public class GameServer extends AbstractHandler {
 
         map = QuickMazeMaker.makeMake(20 * SCREENS, 16);
 
-        for (int s = 1; s <= SCREENS; s++) {
+        for (int s = 0; s < SCREENS; s++) {
             StringBuilder mapScreen = new StringBuilder();
-            for (int x = 20*(s-1); x < 20*s; x++) {
-                for (int y = 0; y < 16; y++) {
+            for (int y = 0; y < 16; y++) {
+                for (int x = 20*s; x < 20*(s+1); x++) {
                     mapScreen.append(map[x][y] + ",");
                 }
             }
-            encodedMap[s-1] = mapScreen.toString();
+            encodedMap[s] = mapScreen.toString();
         }
 
 
