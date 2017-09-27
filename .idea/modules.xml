@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AMSALOS.iml" filepath="$PROJECT_DIR$/AMSALOS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MiniAPI.iml" filepath="$PROJECT_DIR$/MiniAPI.iml" />
     </modules>
   </component>
 </project>
