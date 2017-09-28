@@ -43,8 +43,8 @@ public class GameClient extends Application {
     public static final boolean fullscreen = true;
 
     // - - - - - - - - SERVER SETTINGS - - - - - - - - -  //
-    //public static final String serverAddress = "services.farnborough.ac.uk";
-    public static final String serverAddress = "localhost";
+    public static final String serverAddress = "services.farnborough.ac.uk";
+    //public static final String serverAddress = "localhost";
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     public static int[][] map = null;
