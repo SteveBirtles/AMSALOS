@@ -190,7 +190,7 @@ public class GameClient extends Application {
         }.start();
 
         Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(512),
+                Duration.millis(256),
                 ae -> getUpdate()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
