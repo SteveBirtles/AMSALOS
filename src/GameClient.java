@@ -22,6 +22,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -212,84 +213,93 @@ public class GameClient extends Application {
                                 + "&screen=" + screen);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            InputStream inputStream = con.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String inputjson="";
-            while(br.ready()){
-                inputjson = br.readLine();
+            int responseCode = 0;
+            try {
+                 responseCode = con.getResponseCode();
+            }
+            catch (ConnectException ce) {
+                System.out.println("Unable to connect to server...");
             }
 
-            JSONParser parser = new JSONParser();
-            Object obj = parser.parse(inputjson);
-            JSONObject jsonObject = (JSONObject)obj;
+            if (responseCode == 200) {
 
-            if (jsonObject.containsKey("map")) {
-
-                map = QuickMazeMaker.emptyMap(MAX_X, MAX_Y);
-
-                String mapString = jsonObject.get("map").toString();
-
-                int x = 0;
-                int y = 0;
-                for (String value: mapString.split(",")) {
-                    map[x][y] = Integer.parseInt(value);
-                    x++;
-                    if (x == MAX_X) {
-                        x = 0;
-                        y++;
-                        if (y == MAX_Y) break;
-                    }
+                InputStream inputStream = con.getInputStream();
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+                String inputjson = "";
+                while (br.ready()) {
+                    inputjson = br.readLine();
                 }
 
-            }
+                JSONParser parser = new JSONParser();
+                Object obj = parser.parse(inputjson);
+                JSONObject jsonObject = (JSONObject) obj;
 
-            if (jsonObject.containsKey("frames")) {
+                if (jsonObject.containsKey("map")) {
 
-                JSONArray frameArray = (JSONArray) jsonObject.get("frames");
-                for (Object frameObject : frameArray) {
-                    JSONObject frame = (JSONObject) frameObject;
+                    map = QuickMazeMaker.emptyMap(MAX_X, MAX_Y);
 
-                    long time = -1;
+                    String mapString = jsonObject.get("map").toString();
 
-                    if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
+                    int x = 0;
+                    int y = 0;
+                    for (String value : mapString.split(",")) {
+                        map[x][y] = Integer.parseInt(value);
+                        x++;
+                        if (x == MAX_X) {
+                            x = 0;
+                            y++;
+                            if (y == MAX_Y) break;
+                        }
+                    }
 
-                        time = Long.parseLong(frame.get("time").toString());
+                }
 
-                        viewportPosition = Integer.parseInt(frame.get("position").toString()) - 1;
+                if (jsonObject.containsKey("frames")) {
 
-                        JSONArray entityArray = (JSONArray) frame.get("entities");
+                    JSONArray frameArray = (JSONArray) jsonObject.get("frames");
+                    for (Object frameObject : frameArray) {
+                        JSONObject frame = (JSONObject) frameObject;
 
-                        for (Object entityObject : entityArray) {
-                            JSONObject entity = (JSONObject) entityObject;
-                            if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
-                                int id = Integer.parseInt(entity.get("id").toString());
-                                int type = Integer.parseInt(entity.get("type").toString());
-                                int x = Integer.parseInt(entity.get("x").toString());
-                                int y = Integer.parseInt(entity.get("y").toString());
+                        long time = -1;
 
-                                if (entities.containsKey(id)) {
-                                    entities.get(id).xMap.put(time, x);
-                                    entities.get(id).yMap.put(time, y);
+                        if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
+
+                            time = Long.parseLong(frame.get("time").toString());
+
+                            viewportPosition = Integer.parseInt(frame.get("position").toString()) - 1;
+
+                            JSONArray entityArray = (JSONArray) frame.get("entities");
+
+                            for (Object entityObject : entityArray) {
+                                JSONObject entity = (JSONObject) entityObject;
+                                if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
+                                    int id = Integer.parseInt(entity.get("id").toString());
+                                    int type = Integer.parseInt(entity.get("type").toString());
+                                    int x = Integer.parseInt(entity.get("x").toString());
+                                    int y = Integer.parseInt(entity.get("y").toString());
+
+                                    if (entities.containsKey(id)) {
+                                        entities.get(id).xMap.put(time, x);
+                                        entities.get(id).yMap.put(time, y);
+                                    } else {
+                                        Entity newE = new Entity(id, type);
+                                        newE.xMap.put(time, x);
+                                        newE.yMap.put(time, y);
+                                        entities.put(id, newE);
+                                    }
+                                } else {
+                                    System.out.println("Entity keys are wrong!");
                                 }
-                                else {
-                                    Entity newE = new Entity(id, type);
-                                    newE.xMap.put(time, x);
-                                    newE.yMap.put(time, y);
-                                    entities.put(id, newE);
-                                }
-                            } else {
-                                System.out.println("Entity keys are wrong!");
                             }
                         }
                     }
                 }
-            }
 
-            synchronized (currentEntities) {
-                currentEntities.clear();
-                for (Entity e : entities.values()) {
-                    currentEntities.add(e);
+                synchronized (currentEntities) {
+                    currentEntities.clear();
+                    for (Entity e : entities.values()) {
+                        currentEntities.add(e);
+                    }
                 }
             }
         }
