@@ -165,14 +165,17 @@ public class GameServer extends AbstractHandler {
 
                 synchronized (worldentities) {
                     for (Entity e : worldentities) {
-
                         if (e.xMap.containsKey(t)) {
-                            JSONObject entity = new JSONObject();
-                            entity.put("id", e.getId());
-                            entity.put("type", e.getType());
-                            entity.put("x", e.xMap.get(t));
-                            entity.put("y", e.yMap.get(t));
-                            entities.add(entity);
+                            int x = e.xMap.get(t);
+                            int y = e.yMap.get(t);
+                            if (x >= (position-1)*SCREEN_WIDTH - 2 && x <= position*SCREEN_WIDTH + 2) {
+                                JSONObject entity = new JSONObject();
+                                entity.put("id", e.getId());
+                                entity.put("type", e.getType());
+                                entity.put("x", x);
+                                entity.put("y", y);
+                                entities.add(entity);
+                            }
                         }
                     }
                 }
