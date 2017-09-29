@@ -22,9 +22,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,13 +42,19 @@ public class GameClient extends Application {
     public static final boolean fullscreen = true;
 
     // - - - - - - - - SERVER SETTINGS - - - - - - - - -  //
-    public static final String serverAddress = "services.farnborough.ac.uk";
-    //public static final String serverAddress = "localhost";
+    public static String serverAddress = "localhost";
     //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
 
     public static int[][] map = null;
 
     public static void main(String[] args) {
+        try {
+            if (InetAddress.getLocalHost().getHostName().toLowerCase().contains("comp1-")) {
+                serverAddress = "services.farnborough.ac.uk";
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
         launch(args);
     }
 
@@ -83,21 +87,23 @@ public class GameClient extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.WHITE);
 
-        Image[] sprite = new Image[6];
+        Image[] sprite = new Image[9];
 
-        sprite[0] = new Image("resources/sprite1.png");
-        sprite[1] = new Image("resources/sprite2.png");
-        sprite[2] = new Image("resources/sprite3.png");
-        sprite[3] = new Image("resources/sprite4.png");
-        sprite[4] = new Image("resources/sprite5.png");
-        sprite[5] = new Image("resources/sprite6.png");
+        sprite[0] = new Image("resources/bad1.png");
+        sprite[1] = new Image("resources/bad2.png");
+        sprite[2] = new Image("resources/bad3.png");
+        sprite[3] = new Image("resources/bad4.png");
+        sprite[4] = new Image("resources/bad5.png");
+        sprite[5] = new Image("resources/bad6.png");
+        sprite[8] = new Image("resources/bad7.png");
+        sprite[7] = new Image("resources/bad8.png");
+        sprite[8] = new Image("resources/bad9.png");
 
         Image[] tile = new Image[256];
 
-        tile[0] = new Image("resources/tile2.png");
-        tile[128] = new Image("resources/tile4.png");
-        tile[129] = new Image("resources/tile1.png");
-        tile[130] = new Image("resources/tile3.png");
+        tile[0] = new Image("resources/floor1.png");
+        tile[128] = new Image("resources/wall2.png");
+        tile[129] = new Image("resources/wall1.png");
 
         new AnimationTimer() {
             @Override

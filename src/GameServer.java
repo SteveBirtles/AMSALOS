@@ -214,7 +214,7 @@ public class GameServer extends AbstractHandler {
         synchronized (worldentities) {
             for (int i = 1; i <= ENTITY_COUNT; i++) {
                 Random rnd = new Random();
-                Entity newE = new Entity(i, rnd.nextInt(6) + 1);
+                Entity newE = new Entity(i, rnd.nextInt(9) + 1);
 
                 int x, y;
                 do {
