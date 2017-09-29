@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.json.simple.JSONObject;
-import static Nessy.Gen1.generate;
+import static Nessy.Gen2.generate;
 
 public class GameServer extends AbstractHandler {
 
@@ -21,6 +21,8 @@ public class GameServer extends AbstractHandler {
     public final int MAX_Y = 17;
     public final int SCREEN_COUNT = 20;
     public final int SCREEN_WIDTH = 20;
+
+    public long maptimestamp;
 
     private int[][] map = null;
     private final String[] encodedMap = new String[SCREEN_COUNT];
@@ -136,7 +138,12 @@ public class GameServer extends AbstractHandler {
                     String value = q.split("=")[1];
                     requestText += "   " + variable + " = " + value;
 
+                    long clientmaptimestamp = 0;
+                    if (variable.equals("maptimestamp")) clientmaptimestamp = Long.parseLong(value);
+                    if (clientmaptimestamp != maptimestamp) sendMap = true;
+
                     if (variable.equals("map")) sendMap = value.toLowerCase().equals("true");
+
                     if (variable.equals("screen")) {
                         int screen = Integer.parseInt(value);
                         if (screen != 0) {
@@ -192,7 +199,11 @@ public class GameServer extends AbstractHandler {
             JSONObject finaljson = new JSONObject();
             finaljson.put("frames", frames);
 
-            if (sendMap) finaljson.put("map", encodedMap[position-1]);
+            if (sendMap) {
+                finaljson.put("map", encodedMap[position-1]);
+                finaljson.put("maptimestamp", maptimestamp);
+            }
+
 
             String text = finaljson.toString();
 
@@ -244,7 +255,7 @@ public class GameServer extends AbstractHandler {
 
     public void createMap() {
 
-        map = generate(MAX_X, MAX_Y);
+        map = generate(MAX_X, MAX_Y, true);
 
         for (int s = 0; s < SCREEN_COUNT; s++) {
             StringBuilder mapScreen = new StringBuilder();
@@ -256,6 +267,7 @@ public class GameServer extends AbstractHandler {
             encodedMap[s] = mapScreen.toString();
         }
 
+        maptimestamp = System.currentTimeMillis() >> 8;
 
     }
 
@@ -273,4 +285,5 @@ public class GameServer extends AbstractHandler {
     }
 
 }
+
 

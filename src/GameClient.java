@@ -35,6 +35,7 @@ public class GameClient extends Application {
     public static final int MAX_Y = 17;
 
     public static int screen = 0;
+    public static long maptimestamp = 0;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
@@ -215,6 +216,7 @@ public class GameClient extends Application {
         try {
             url = new URL( "http://" + serverAddress + ":8081"
                                 + "?index=" + clientTime
+                                + "&maptimestamp=" + maptimestamp
                                 + "&map=" + (map == null ? "true" : "false")
                                 + "&screen=" + screen);
             con = (HttpURLConnection) url.openConnection();
@@ -257,6 +259,12 @@ public class GameClient extends Application {
                             if (y == MAX_Y) break;
                         }
                     }
+
+                }
+
+                if (jsonObject.containsKey("maptimestamp")) {
+
+                    maptimestamp = Long.parseLong(jsonObject.get("maptimestamp").toString());
 
                 }
 
