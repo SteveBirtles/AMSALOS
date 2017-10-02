@@ -40,7 +40,7 @@ public class GameClient extends Application {
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
     static int viewportPosition = 0;
-    public static final boolean fullscreen = true;
+    public static final boolean fullscreen = false;
 
     // - - - - - - - - SERVER SETTINGS - - - - - - - - -  //
     public static String serverAddress = "localhost";
@@ -251,9 +251,8 @@ public class GameClient extends Application {
                 }
 
                 if (jsonObject.containsKey("maptimestamp")) {
-
                     maptimestamp = Long.parseLong(jsonObject.get("maptimestamp").toString());
-
+                    System.out.println("Recieved: " + maptimestamp);
                 }
 
                 if (jsonObject.containsKey("frames")) {

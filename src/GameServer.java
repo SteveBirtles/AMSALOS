@@ -139,8 +139,13 @@ public class GameServer extends AbstractHandler {
                     requestText += "   " + variable + " = " + value;
 
                     long clientmaptimestamp = 0;
-                    if (variable.equals("maptimestamp")) clientmaptimestamp = Long.parseLong(value);
-                    if (clientmaptimestamp != maptimestamp) sendMap = true;
+                    if (variable.equals("maptimestamp")) {
+                        clientmaptimestamp = Long.parseLong(value);
+                        if (clientmaptimestamp != maptimestamp) sendMap = true;
+                    }
+
+                    //System.out.println(variable + " = " + value + ": " + clientmaptimestamp + " vs " + maptimestamp);
+
 
                     if (variable.equals("map")) sendMap = value.toLowerCase().equals("true");
 
