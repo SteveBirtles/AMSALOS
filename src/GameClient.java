@@ -40,7 +40,7 @@ public class GameClient extends Application {
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
     static int viewportPosition = 0;
-    public static final boolean fullscreen = false;
+    public static final boolean fullscreen = true;
 
     // - - - - - - - - SERVER SETTINGS - - - - - - - - -  //
     public static String serverAddress = "localhost";

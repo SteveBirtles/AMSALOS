@@ -147,7 +147,7 @@ public class GameServer extends AbstractHandler {
                     //System.out.println(variable + " = " + value + ": " + clientmaptimestamp + " vs " + maptimestamp);
 
 
-                    if (variable.equals("map")) sendMap = value.toLowerCase().equals("true");
+                    if (variable.equals("map") && !sendMap) sendMap = value.toLowerCase().equals("true");
 
                     if (variable.equals("screen")) {
                         int screen = Integer.parseInt(value);
