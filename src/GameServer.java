@@ -186,8 +186,11 @@ public class GameServer extends AbstractHandler {
                 createEntities(1, addEntity == 0 ? position : addEntity);
             }
             else if (resetAll) {
-                worldentities.clear();
-                createMap();
+                long t = System.currentTimeMillis() >> 8;
+                if (t - maptimestamp > 8) {
+                    worldentities.clear();
+                    createMap();
+                }
             }
 
             response.getWriter().println("OK");
