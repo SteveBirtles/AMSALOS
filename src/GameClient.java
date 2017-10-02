@@ -40,11 +40,9 @@ public class GameClient extends Application {
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
     static int viewportPosition = 0;
-    public static final boolean fullscreen = true;
 
-    // - - - - - - - - SERVER SETTINGS - - - - - - - - -  //
     public static String serverAddress = "localhost";
-    //  - - - - - - - -  - - - - - - - -  - - - - - - - - //
+    public static boolean fullscreen = false;
 
     public static int[][] map = null;
 
@@ -53,6 +51,7 @@ public class GameClient extends Application {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.contains("comp1-") && !host.contains("reg")) {
                 serverAddress = "services.farnborough.ac.uk";
+                fullscreen = true;
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -104,6 +103,8 @@ public class GameClient extends Application {
 
                     if (k == KeyCode.TAB) screen = 0;
 
+                    if (k == KeyCode.SPACE) requestEntity();
+
                     if (k == KeyCode.Q) screen = 1;
                     if (k == KeyCode.W) screen = 2;
                     if (k == KeyCode.E) screen = 3;
@@ -130,7 +131,6 @@ public class GameClient extends Application {
 
                     if (screen != last_screen) {
                         map = null;
-                        last_screen = screen;
                         currentEntities.clear();
                     }
 
@@ -192,6 +192,37 @@ public class GameClient extends Application {
         timeline.play();
 
     }
+
+    public static void requestEntity() {
+
+        URL url;
+        HttpURLConnection con;
+
+        try {
+            url = new URL( "http://" + serverAddress + ":8081?add=1");
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+
+            System.out.println("Requesting another entity...");
+
+            int responseCode = 0;
+            try {
+                responseCode = con.getResponseCode();
+            }
+            catch (ConnectException ce) {
+                System.out.println("Unable to connect to server...");
+            }
+
+            if (responseCode != 200) {
+                System.out.println("HTTP POST ERROR: " + responseCode);
+            }
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
 
     public static void getUpdate() {
 

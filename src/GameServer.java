@@ -16,7 +16,6 @@ import static Nessy.Gen1.generate;
 public class GameServer extends AbstractHandler {
 
     public final ArrayList<Entity> worldentities = new ArrayList<>();
-    public final int ENTITY_COUNT = 100;
     public final int MAX_X = 401;
     public final int MAX_Y = 17;
     public final int SCREEN_COUNT = 20;
@@ -113,6 +112,7 @@ public class GameServer extends AbstractHandler {
 
         int position = 1;
         boolean sendMap = false;
+        int addEntity = -1;
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
             position = Integer.parseInt(ip[3]);
@@ -130,30 +130,39 @@ public class GameServer extends AbstractHandler {
         String requestText = "[ " + request.getRemoteAddr() + "  |  " + df.format(dateobj) + "  |  ";
         requestText += request.getMethod() + " ] \t " + request.getRequestURI() + " \t ";
 
+        String method = request.getMethod().toUpperCase();
+
         if (request.getQueryString() != null) {
 
             for (String q : request.getQueryString().split("&")) {
                 if (q.contains("=")) {
+
                     String variable = q.split("=")[0];
                     String value = q.split("=")[1];
                     requestText += "   " + variable + " = " + value;
 
-                    long clientmaptimestamp = 0;
-                    if (variable.equals("maptimestamp")) {
-                        clientmaptimestamp = Long.parseLong(value);
-                        if (clientmaptimestamp != maptimestamp) sendMap = true;
-                    }
+                    if (method.equals("GET")) {
 
-                    //System.out.println(variable + " = " + value + ": " + clientmaptimestamp + " vs " + maptimestamp);
-
-
-                    if (variable.equals("map") && !sendMap) sendMap = value.toLowerCase().equals("true");
-
-                    if (variable.equals("screen")) {
-                        int screen = Integer.parseInt(value);
-                        if (screen != 0) {
-                            position = screen;
+                        if (variable.equals("maptimestamp")) {
+                            if (Long.parseLong(value) != maptimestamp) sendMap = true;
                         }
+
+                        if (variable.equals("map") && !sendMap) sendMap = value.toLowerCase().equals("true");
+
+                        if (variable.equals("screen")) {
+                            int screen = Integer.parseInt(value);
+                            if (screen != 0) {
+                                position = screen;
+                            }
+                        }
+
+                    }
+                    else if (method.equals("POST")) {
+
+                        if (variable.equals("add")) {
+                            addEntity = Integer.parseInt(value);
+                        }
+
                     }
 
                 } else {
@@ -166,7 +175,14 @@ public class GameServer extends AbstractHandler {
         }
         System.out.println(requestText);
 
-        if (position != -1) {
+        if (method.equals("POST") && addEntity != -1) {
+
+            createEntities(addEntity, position);
+
+            response.getWriter().println("OK");
+
+        }
+        else if (method.equals("GET") && position != -1) {
 
             ArrayList<JSONObject> frames = new ArrayList<>();
             for (long t = time - 1; t < time + 4; t++) {
@@ -223,18 +239,25 @@ public class GameServer extends AbstractHandler {
 
     }
 
-    public void createEntities() {
+    public void createEntities(int entityCount, int screenNo) {
 
         long t = System.currentTimeMillis() >> 8;
 
         synchronized (worldentities) {
-            for (int i = 1; i <= ENTITY_COUNT; i++) {
+
+            int existingEntities = worldentities.size();
+
+            for (int i = 1; i <= entityCount; i++) {
                 Random rnd = new Random();
-                Entity newE = new Entity(i, rnd.nextInt(9) + 1);
+                Entity newE = new Entity(existingEntities + i, rnd.nextInt(9) + 1);
 
                 int x, y;
                 do {
-                    x = rnd.nextInt(MAX_X);
+                    if (screenNo == 0) {
+                        x = rnd.nextInt(MAX_X);
+                    } else {
+                        x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
+                    }
                     y = rnd.nextInt(MAX_Y);
                 } while (map[x][y] > 127);
 
@@ -252,6 +275,10 @@ public class GameServer extends AbstractHandler {
                 worldentities.add(newE);
             }
         }
+
+    }
+
+    public void startEntityTimer() {
 
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new EntityUpdater(), 0, 256);
@@ -280,7 +307,7 @@ public class GameServer extends AbstractHandler {
 
         GameServer gameServer = new GameServer();
         gameServer.createMap();
-        gameServer.createEntities();
+        gameServer.startEntityTimer();
 
         Server server = new Server(8081);
         server.setHandler(gameServer);
