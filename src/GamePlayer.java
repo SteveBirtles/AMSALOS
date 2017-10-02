@@ -27,20 +27,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class GameClient extends Application {
+public class GamePlayer extends Application {
 
-    public static final int WINDOW_WIDTH = 1280;
-    public static final int WINDOW_HEIGHT = 1024;
-    public static final int MAX_X = 21;
+    public static final int WINDOW_WIDTH = 1920;
+    public static final int WINDOW_HEIGHT = 1080;
+    public static final int MAX_X = 401;
     public static final int MAX_Y = 17;
 
-    public static int screen = 0;
+    //public static int screen = 0;
     public static long maptimestamp = 0;
     public static int failCount = 0;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
-    static int viewportPosition = 0;
+    //static int viewportPosition = 0;
 
     public static String serverAddress = "localhost";
     public static boolean fullscreen = false;
@@ -49,11 +49,11 @@ public class GameClient extends Application {
 
     @SuppressWarnings("Duplicates")
     public static void main(String[] args) {
+        fullscreen = true;
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.contains("comp1-") && !host.contains("reg")) {
                 serverAddress = "services.farnborough.ac.uk";
-                fullscreen = true;
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -69,7 +69,7 @@ public class GameClient extends Application {
         Scene scene = new Scene(rootPane);
 
         Stage stage = new Stage();
-        stage.setTitle("AMSALOS CLIENT");
+        stage.setTitle("AMSALOS PLAYER");
         stage.setResizable(false);
         stage.setFullScreen(fullscreen);
         stage.setScene(scene);
@@ -102,39 +102,29 @@ public class GameClient extends Application {
 
                     if (k == KeyCode.ESCAPE) System.exit(0);
 
-                    int last_screen = screen;
-
-                    if (k == KeyCode.TAB) screen = 0;
-
-                    if (k == KeyCode.SPACE && keysPressed.contains(KeyCode.CONTROL)) requestPost("add=0");
                     if (k == KeyCode.X && keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) requestPost("reset=true");
 
                     if (keysPressed.contains(KeyCode.ALT)) {
-                        if (k == KeyCode.Q) screen = 1;
-                        if (k == KeyCode.W) screen = 2;
-                        if (k == KeyCode.E) screen = 3;
-                        if (k == KeyCode.R) screen = 4;
-                        if (k == KeyCode.T) screen = 5;
-                        if (k == KeyCode.Y) screen = 6;
-                        if (k == KeyCode.U) screen = 7;
-                        if (k == KeyCode.I) screen = 8;
-                        if (k == KeyCode.O) screen = 9;
-                        if (k == KeyCode.P) screen = 10;
-                        if (k == KeyCode.A) screen = 11;
-                        if (k == KeyCode.S) screen = 12;
-                        if (k == KeyCode.D) screen = 13;
-                        if (k == KeyCode.F) screen = 14;
-                        if (k == KeyCode.G) screen = 15;
-                        if (k == KeyCode.H) screen = 16;
-                        if (k == KeyCode.J) screen = 17;
-                        if (k == KeyCode.K) screen = 18;
-                        if (k == KeyCode.L) screen = 19;
-                        if (k == KeyCode.SEMICOLON) screen = 20;
-                    }
-
-                    if (screen != last_screen) {
-                        map = null;
-                        currentEntities.clear();
+                        if (k == KeyCode.Q) requestPost("add=1");
+                        if (k == KeyCode.W) requestPost("add=2");
+                        if (k == KeyCode.E) requestPost("add=3");
+                        if (k == KeyCode.R) requestPost("add=4");
+                        if (k == KeyCode.T) requestPost("add=5");
+                        if (k == KeyCode.Y) requestPost("add=6");
+                        if (k == KeyCode.U) requestPost("add=7");
+                        if (k == KeyCode.I) requestPost("add=8");
+                        if (k == KeyCode.O) requestPost("add=9");
+                        if (k == KeyCode.P) requestPost("add=10");
+                        if (k == KeyCode.A) requestPost("add=11");
+                        if (k == KeyCode.S) requestPost("add=12");
+                        if (k == KeyCode.D) requestPost("add=13");
+                        if (k == KeyCode.F) requestPost("add=14");
+                        if (k == KeyCode.G) requestPost("add=15");
+                        if (k == KeyCode.H) requestPost("add=16");
+                        if (k == KeyCode.J) requestPost("add=17");
+                        if (k == KeyCode.K) requestPost("add=18");
+                        if (k == KeyCode.L) requestPost("add=19");
+                        if (k == KeyCode.SEMICOLON) requestPost("add=20");
                     }
 
                 }
@@ -145,9 +135,13 @@ public class GameClient extends Application {
                 if (map != null) {
                     for (int x = 0; x < MAX_X; x++) {
                         for (int y = 0; y < MAX_Y; y++) {
-                            int column = map[x][y] % 16;
-                            int row = map[x][y] / 16;
-                            gc.drawImage(tiles, column * 64, row * 64, 64, 64, x * 64 - 32, y * 64 - 32, 64, 64);
+                            if (map[x][y] < 128) {
+                                gc.setFill(Color.NAVY);
+                            }
+                            else {
+                                gc.setFill(Color.BLUE);
+                            }
+                            gc.fillRect(158 + x*4, 50 + y*4, 4, 4);
                         }
                     }
                 }
@@ -175,11 +169,11 @@ public class GameClient extends Application {
                         }
 
                         if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
-                            int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
-                            int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
-                            int column = (e.getType() - 1) % 16;
-                            int row = (e.getType() - 1) / 16;
-                            gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
+                            int x = (int) (4.0 * (x0 + offset * (x1 - x0)));
+                            int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
+
+                            gc.setFill(Color.WHITE);
+                            gc.fillRect(158 + x, 50 + y, 4, 4);
                         }
 
                     }
@@ -233,15 +227,15 @@ public class GameClient extends Application {
 
         try {
             url = new URL( "http://" + serverAddress + ":8081"
-                                + "?index=" + clientTime
-                                + "&maptimestamp=" + maptimestamp
-                                + "&map=" + (map == null ? "true" : "false")
-                                + "&screen=" + screen);
+                    + "?index=" + clientTime
+                    + "&player=true"
+                    + "&maptimestamp=" + maptimestamp
+                    + "&map=" + (map == null ? "true" : "false"));
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = 0;
             try {
-                 responseCode = con.getResponseCode();
+                responseCode = con.getResponseCode();
             }
             catch (ConnectException ce) {
                 System.out.println("Unable to connect to server...");
@@ -284,7 +278,7 @@ public class GameClient extends Application {
 
                 if (jsonObject.containsKey("maptimestamp")) {
                     maptimestamp = Long.parseLong(jsonObject.get("maptimestamp").toString());
-                    System.out.println("Recieved: " + maptimestamp);
+                    //System.out.println("Recieved: " + maptimestamp);
                 }
 
                 if (jsonObject.containsKey("frames")) {
@@ -298,8 +292,6 @@ public class GameClient extends Application {
                         if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
 
                             time = Long.parseLong(frame.get("time").toString());
-
-                            viewportPosition = Integer.parseInt(frame.get("position").toString()) - 1;
 
                             JSONArray entityArray = (JSONArray) frame.get("entities");
 

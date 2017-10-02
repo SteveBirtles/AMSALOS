@@ -15,16 +15,19 @@ import static Nessy.Gen1.generate;
 
 public class GameServer extends AbstractHandler {
 
-    public final ArrayList<Entity> worldentities = new ArrayList<>();
-    public final int MAX_X = 401;
-    public final int MAX_Y = 17;
-    public final int SCREEN_COUNT = 20;
-    public final int SCREEN_WIDTH = 20;
+    public final static boolean debug = false;
+
+    public final static ArrayList<Entity> worldentities = new ArrayList<>();
+    public final static int MAX_X = 401;
+    public final static int MAX_Y = 17;
+    public final static int SCREEN_COUNT = 20;
+    public final static int SCREEN_WIDTH = 20;
 
     public long maptimestamp;
 
     private int[][] map = null;
     private final String[] encodedMap = new String[SCREEN_COUNT];
+    private String fullEncodedMap = "";
 
     public class EntityUpdater extends TimerTask {
 
@@ -110,9 +113,11 @@ public class GameServer extends AbstractHandler {
 
         String[] ip = request.getRemoteAddr().split("\\.");
 
-        int position = 1;
         boolean sendMap = false;
         boolean resetAll = false;
+        boolean isPlayer = false;
+
+        int position = 1;
         int addEntity = -1;
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
@@ -157,6 +162,10 @@ public class GameServer extends AbstractHandler {
                             }
                         }
 
+                        if (variable.equals("player")) {
+                            isPlayer = Boolean.parseBoolean(value);
+                        }
+
                     }
                     else if (method.equals("POST")) {
 
@@ -178,7 +187,7 @@ public class GameServer extends AbstractHandler {
         } else {
             requestText += "   No query string supplied";
         }
-        System.out.println(requestText);
+        if (debug) System.out.println(requestText);
 
         if (method.equals("POST")) {
 
@@ -201,8 +210,6 @@ public class GameServer extends AbstractHandler {
             ArrayList<JSONObject> frames = new ArrayList<>();
             for (long t = time - 1; t < time + 4; t++) {
 
-                //System.out.println(t);
-
                 ArrayList<JSONObject> entities = new ArrayList<>();
 
                 synchronized (worldentities) {
@@ -210,7 +217,7 @@ public class GameServer extends AbstractHandler {
                         if (e.xMap.containsKey(t)) {
                             int x = e.xMap.get(t);
                             int y = e.yMap.get(t);
-                            if (x >= (position-1)*SCREEN_WIDTH - 2 && x <= position*SCREEN_WIDTH + 2) {
+                            if (isPlayer || (x >= (position-1)*SCREEN_WIDTH - 2 && x <= position*SCREEN_WIDTH + 2)) {
                                 JSONObject entity = new JSONObject();
                                 entity.put("id", e.getId());
                                 entity.put("type", e.getType());
@@ -235,7 +242,13 @@ public class GameServer extends AbstractHandler {
             finaljson.put("frames", frames);
 
             if (sendMap) {
-                finaljson.put("map", encodedMap[position-1]);
+                if (isPlayer) {
+                    finaljson.put("map", fullEncodedMap);
+                }
+                else {
+                    finaljson.put("map", encodedMap[position - 1]);
+                }
+
                 finaljson.put("maptimestamp", maptimestamp);
             }
 
@@ -243,7 +256,7 @@ public class GameServer extends AbstractHandler {
             String text = finaljson.toString();
 
             response.getWriter().println(text);
-            System.out.println(text);
+            if (debug) System.out.println(text);
         }
         else {
             response.getWriter().println("Error!");
@@ -313,6 +326,17 @@ public class GameServer extends AbstractHandler {
             encodedMap[s] = mapScreen.toString();
         }
 
+        StringBuilder fullMap = new StringBuilder();
+        for (int s = 0; s < SCREEN_COUNT; s++) {
+
+            for (int y = 0; y < MAX_Y; y++) {
+                for (int x = 0; x < MAX_X; x++) {
+                    fullMap.append(map[x][y] + ",");
+                }
+            }
+        }
+        fullEncodedMap = fullMap.toString();
+
         maptimestamp = System.currentTimeMillis() >> 8;
 
     }
@@ -321,6 +345,9 @@ public class GameServer extends AbstractHandler {
 
         GameServer gameServer = new GameServer();
         gameServer.createMap();
+        for (int i = 1; i <= SCREEN_COUNT; i++ ) {
+            gameServer.createEntities(10, i);
+        }
         gameServer.startEntityTimer();
 
         Server server = new Server(8081);
