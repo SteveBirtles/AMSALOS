@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.json.simple.JSONObject;
-import static Nessy.Gen2.generate;
+import static Nessy.Gen1.generate;
 
 public class GameServer extends AbstractHandler {
 
@@ -255,7 +255,7 @@ public class GameServer extends AbstractHandler {
 
     public void createMap() {
 
-        map = generate(MAX_X, MAX_Y, true);
+        map = generate(MAX_X, MAX_Y);
 
         for (int s = 0; s < SCREEN_COUNT; s++) {
             StringBuilder mapScreen = new StringBuilder();

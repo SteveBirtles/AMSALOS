@@ -50,7 +50,8 @@ public class GameClient extends Application {
 
     public static void main(String[] args) {
         try {
-            if (InetAddress.getLocalHost().getHostName().toLowerCase().contains("comp1-")) {
+            String host = InetAddress.getLocalHost().getHostName().toLowerCase();
+            if (host.contains("comp1-") && !host.contains("reg")) {
                 serverAddress = "services.farnborough.ac.uk";
             }
         } catch (UnknownHostException e) {
@@ -88,23 +89,8 @@ public class GameClient extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.WHITE);
 
-        Image[] sprite = new Image[9];
-
-        sprite[0] = new Image("resources/bad1.png");
-        sprite[1] = new Image("resources/bad2.png");
-        sprite[2] = new Image("resources/bad3.png");
-        sprite[3] = new Image("resources/bad4.png");
-        sprite[4] = new Image("resources/bad5.png");
-        sprite[5] = new Image("resources/bad6.png");
-        sprite[8] = new Image("resources/bad7.png");
-        sprite[7] = new Image("resources/bad8.png");
-        sprite[8] = new Image("resources/bad9.png");
-
-        Image[] tile = new Image[256];
-
-        tile[0] = new Image("resources/floor1.png");
-        tile[128] = new Image("resources/wall2.png");
-        tile[129] = new Image("resources/wall1.png");
+        Image sprites = new Image("resources/all_sprites.png");
+        Image tiles = new Image("resources/all_tiles.png");
 
         new AnimationTimer() {
             @Override
@@ -156,7 +142,9 @@ public class GameClient extends Application {
                 if (map != null) {
                     for (int x = 0; x < MAX_X; x++) {
                         for (int y = 0; y < MAX_Y; y++) {
-                            gc.drawImage(tile[map[x][y]], x * 64 - 32, y * 64 - 32);
+                            int column = map[x][y] % 16;
+                            int row = map[x][y] / 16;
+                            gc.drawImage(tiles, column * 64, row * 64, 64, 64, x * 64 - 32, y * 64 - 32, 64, 64);
                         }
                     }
                 }
@@ -183,12 +171,12 @@ public class GameClient extends Application {
                             }
                         }
 
-                        int imageNo = e.getType() - 1;
-
                         if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
                             int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
                             int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
-                            gc.drawImage(sprite[imageNo], x - viewportPosition * WINDOW_WIDTH, y );
+                            int column = (e.getType() - 1) % 16;
+                            int row = (e.getType() - 1) / 16;
+                            gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
                         }
 
                     }
