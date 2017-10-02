@@ -112,6 +112,7 @@ public class GameServer extends AbstractHandler {
 
         int position = 1;
         boolean sendMap = false;
+        boolean resetAll = false;
         int addEntity = -1;
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
@@ -162,6 +163,10 @@ public class GameServer extends AbstractHandler {
                         if (variable.equals("add")) {
                             addEntity = Integer.parseInt(value);
                         }
+                        else if (variable.equals("reset")) {
+                            resetAll = Boolean.parseBoolean(value);
+                        }
+
 
                     }
 
@@ -175,9 +180,15 @@ public class GameServer extends AbstractHandler {
         }
         System.out.println(requestText);
 
-        if (method.equals("POST") && addEntity != -1) {
+        if (method.equals("POST")) {
 
-            createEntities(addEntity, position);
+            if ( addEntity != -1) {
+                createEntities(1, addEntity == 0 ? position : addEntity);
+            }
+            else if (resetAll) {
+                worldentities.clear();
+                createMap();
+            }
 
             response.getWriter().println("OK");
 

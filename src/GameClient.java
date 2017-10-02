@@ -36,6 +36,7 @@ public class GameClient extends Application {
 
     public static int screen = 0;
     public static long maptimestamp = 0;
+    public static int failCount = 0;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<Entity> currentEntities = new ArrayList<>();
@@ -103,7 +104,8 @@ public class GameClient extends Application {
 
                     if (k == KeyCode.TAB) screen = 0;
 
-                    if (k == KeyCode.SPACE) requestEntity();
+                    if (k == KeyCode.SPACE) requestPost("add=0");
+                    if (k == KeyCode.X) requestPost("reset=true");
 
                     if (k == KeyCode.Q) screen = 1;
                     if (k == KeyCode.W) screen = 2;
@@ -193,18 +195,15 @@ public class GameClient extends Application {
 
     }
 
-    public static void requestEntity() {
+    public static void requestPost(String query) {
 
         URL url;
         HttpURLConnection con;
 
         try {
-            url = new URL( "http://" + serverAddress + ":8081?add=1");
+            url = new URL( "http://" + serverAddress + ":8081?" + query);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("POST");
-
-            System.out.println("Requesting another entity...");
-
             int responseCode = 0;
             try {
                 responseCode = con.getResponseCode();
@@ -212,7 +211,6 @@ public class GameClient extends Application {
             catch (ConnectException ce) {
                 System.out.println("Unable to connect to server...");
             }
-
             if (responseCode != 200) {
                 System.out.println("HTTP POST ERROR: " + responseCode);
             }
@@ -246,10 +244,12 @@ public class GameClient extends Application {
             }
             catch (ConnectException ce) {
                 System.out.println("Unable to connect to server...");
+                failCount++;
+                if (failCount > 10) System.exit(-10);
             }
 
             if (responseCode == 200) {
-
+                failCount = 0;
                 InputStream inputStream = con.getInputStream();
                 BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
                 String inputjson = "";
