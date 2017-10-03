@@ -206,7 +206,14 @@ public class GamePlayer extends Application {
 
                     if (k == KeyCode.ESCAPE) System.exit(0);
 
-                    if (k == KeyCode.X && keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) requestPost("reset=true");
+                    if (keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) {
+                        if (k == KeyCode.Z) {
+                            requestPost("reset=1");
+                        }
+                        else if (k == KeyCode.X) {
+                            requestPost("reset=2");
+                        }
+                    }
 
                     /*if (keysPressed.contains(KeyCode.ALT)) {
                         if (k == KeyCode.Q) requestPost("add=1");

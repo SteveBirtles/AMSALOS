@@ -45,5 +45,59 @@ public class QuickMazeMaker {
 
         return maze;
     }
+    
+    public static int[][] fixEdges(int[][] maze) {
+        
+        int width = maze.length;
+        int height = maze[0].length;
+        
+        for (int p = 0; p < width; p++) {
+            for (int q = 0; q < height; q++) {
+                if (maze[p][q] == 128) {
+
+                    if (p == 0) {
+                        maze[p][q] = (maze[p+1][q] >= 128) ? 143 : 135;
+                        continue;
+                    }
+                    if (q == 0) {
+                        maze[p][q] = (maze[p][q+1] >= 128) ? 143 : 141;
+                        continue;
+                    }
+                    if (p == width-1) {
+                        maze[p][q] = (maze[p-1][q] >= 128) ? 143 : 139;
+                        continue;
+                    }
+                    if (q == height-1) {
+                        maze[p][q] = (maze[p][q-1] >= 128) ? 143 : 142;
+                        continue;
+                    }
+
+                    boolean north = maze[p][q-1] >= 128;
+                    boolean south = maze[p][q+1] >= 128;
+                    boolean east = maze[p+1][q] >= 128;
+                    boolean west = maze[p-1][q] >= 128;
+
+                    if (north && !south && !east && !west) maze[p][q] = 129;
+                    else if (!north && south && !east && !west) maze[p][q] = 130;
+                    else if (north && south && !east && !west) maze[p][q] = 131;
+                    else if (!north && !south && !east && west) maze[p][q] = 132;
+                    else if (north && !south && !east && west) maze[p][q] = 133;
+                    else if (!north && south && !east && west) maze[p][q] = 134;
+                    else if (north && south && !east && west) maze[p][q] = 135;
+                    else if (!north && !south && east && !west) maze[p][q] = 136;
+                    else if (north && !south && east && !west) maze[p][q] = 137;
+                    else if (!north && south && east && !west) maze[p][q] = 138;
+                    else if (north && south && east && !west) maze[p][q] = 139;
+                    else if (!north && !south && east && west) maze[p][q] = 140;
+                    else if (north && !south && east && west) maze[p][q] = 141;
+                    else if (!north && south && east && west) maze[p][q] = 142;
+                    else if (north && south && east && west) maze[p][q] = 143;
+                }
+            }
+        }
+
+        return maze;
+
+    }
 
 }

@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.json.simple.JSONObject;
-import static Nessy.Gen1.generate;
+//import static Nessy;
 
 public class GameServer extends AbstractHandler {
 
@@ -115,11 +115,11 @@ public class GameServer extends AbstractHandler {
         String[] ip = request.getRemoteAddr().split("\\.");
 
         boolean sendMap = false;
-        boolean resetAll = false;
         boolean isPlayer = false;
 
         int position = 1;
         int addEntity = -1;
+        int resetAll = -1;
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
             position = Integer.parseInt(ip[3]);
@@ -177,7 +177,7 @@ public class GameServer extends AbstractHandler {
                             position = Integer.parseInt(value);
                         }
                         else if (variable.equals("reset")) {
-                            resetAll = Boolean.parseBoolean(value);
+                            resetAll = Integer.parseInt(value);
                         }
 
 
@@ -199,11 +199,11 @@ public class GameServer extends AbstractHandler {
             if ( addEntity != -1) {
                 createEntities(1, position, addEntity);
             }
-            else if (resetAll) {
+            else if (resetAll != -1) {
                 long t = System.currentTimeMillis() >> 8;
                 if (t - maptimestamp > 8) {
                     worldentities.clear();
-                    createMap();
+                    createMap(resetAll);
                 }
             }
 
@@ -319,11 +319,20 @@ public class GameServer extends AbstractHandler {
 
     }
 
-    public void createMap() {
+    public void createMap(int type) {
 
         maptimestamp = System.currentTimeMillis() >> 8;
 
-        map = generate(MAX_X, MAX_Y, maptimestamp);
+        switch (type) {
+            case 1:
+                map = Nessy.Gen1.generate(MAX_X, MAX_Y, maptimestamp);
+                break;
+            case 2:
+                map = Nessy.Gen2.generate(MAX_X, MAX_Y, true, maptimestamp);
+                break;
+        }
+
+        map = Steve.QuickMazeMaker.fixEdges(map);
 
         for (int s = 0; s < SCREEN_COUNT; s++) {
             StringBuilder mapScreen = new StringBuilder();
@@ -351,7 +360,7 @@ public class GameServer extends AbstractHandler {
     public static void main(String[] args) throws Exception {
 
         GameServer gameServer = new GameServer();
-        gameServer.createMap();
+        gameServer.createMap(1);
         gameServer.startEntityTimer();
 
         Server server = new Server(8081);
