@@ -173,9 +173,13 @@ public class GameServer extends AbstractHandler {
                         if (variable.equals("add")) {
                             addEntity = Integer.parseInt(value);
                         }
+                        else if (variable.equals("screen")) {
+                            position = Integer.parseInt(value);
+                        }
                         else if (variable.equals("reset")) {
                             resetAll = Boolean.parseBoolean(value);
                         }
+
 
 
                     }
@@ -193,7 +197,7 @@ public class GameServer extends AbstractHandler {
         if (method.equals("POST")) {
 
             if ( addEntity != -1) {
-                createEntities(1, addEntity == 0 ? position : addEntity);
+                createEntities(1, position, addEntity);
             }
             else if (resetAll) {
                 long t = System.currentTimeMillis() >> 8;
@@ -267,7 +271,7 @@ public class GameServer extends AbstractHandler {
 
     }
 
-    public void createEntities(int entityCount, int screenNo) {
+    public void createEntities(int entityCount, int screenNo, int type) {
 
         long t = System.currentTimeMillis() >> 8;
 
@@ -279,7 +283,7 @@ public class GameServer extends AbstractHandler {
 
             for (int i = 1; i <= entityCount; i++) {
 
-                Entity newE = new Entity(existingEntities + i, rnd.nextInt(9) + 1);
+                Entity newE = new Entity(existingEntities + i, type);
 
                 int x, y;
                 do {
@@ -348,9 +352,6 @@ public class GameServer extends AbstractHandler {
 
         GameServer gameServer = new GameServer();
         gameServer.createMap();
-        for (int i = 1; i <= SCREEN_COUNT; i++ ) {
-            gameServer.createEntities(10, i);
-        }
         gameServer.startEntityTimer();
 
         Server server = new Server(8081);

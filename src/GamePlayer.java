@@ -4,14 +4,22 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
@@ -47,6 +55,9 @@ public class GamePlayer extends Application {
 
     public static int[][] map = null;
 
+    public static ImageView selectedEntityImageView;
+    public static int selectedEntity = 1;
+
     @SuppressWarnings("Duplicates")
     public static void main(String[] args) {
         fullscreen = true;
@@ -59,6 +70,15 @@ public class GamePlayer extends Application {
             e.printStackTrace();
         }
         launch(args);
+    }
+
+    public void setSelectedEntity(int number) {
+        selectedEntity = number;
+        selectedEntityImageView.setViewport(new Rectangle2D((selectedEntity-1)*64,0,64,64));
+    }
+
+    public void addEntity(int screen) {
+        requestPost("add=" + selectedEntity + "&screen=" + screen);
     }
 
     @SuppressWarnings("Duplicates")
@@ -81,18 +101,83 @@ public class GamePlayer extends Application {
         scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> keysPressed.add(event.getCode()));
         scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> keysPressed.remove(event.getCode()));
 
-        Canvas canvas = new Canvas();
-
-        canvas.setWidth(WINDOW_WIDTH);
-        canvas.setHeight(WINDOW_HEIGHT);
-
-        rootPane.getChildren().add(canvas);
-
-        GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.setStroke(Color.WHITE);
-
         Image sprites = new Image("resources/all_sprites.png");
         Image tiles = new Image("resources/all_tiles.png");
+
+        BorderPane borderPane = new BorderPane();
+        borderPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        borderPane.setStyle("-fx-padding: 10;" +
+                "-fx-border-style: solid inside;" +
+                "-fx-border-width: 2;" +
+                "-fx-border-insets: 5;" +
+                "-fx-border-radius: 5;" +
+                "-fx-border-color: blue;" +
+                "-fx-background-color: white");
+
+        Canvas miniMapCanvas = new Canvas();
+        miniMapCanvas.setWidth(1604);
+        miniMapCanvas.setHeight(68);
+        miniMapCanvas.setLayoutX(158);
+        miniMapCanvas.setLayoutY(882);
+
+        HBox screenButtons = new HBox();
+        screenButtons.setSpacing(10);
+        screenButtons.setPadding(new Insets(5));
+        for (int i = 1; i <= 20; i++) {
+            Button screenButton = new Button(Integer.toString(i));
+            screenButton.setPrefSize(70, 40);
+            screenButton.setFont(new Font(24));
+            final int screenNumber = i;
+            screenButton.setOnAction((ActionEvent ae) -> addEntity(screenNumber));
+            screenButtons.getChildren().add(screenButton);
+        }
+
+        VBox miniMapHBox = new VBox();
+        miniMapHBox.setSpacing(10);
+        miniMapHBox.getChildren().add(screenButtons);
+        miniMapHBox.getChildren().add(miniMapCanvas);
+        miniMapHBox.setMaxWidth(1604);
+            borderPane.setBottom(miniMapHBox);
+        borderPane.setAlignment(miniMapHBox, Pos.BOTTOM_CENTER);
+
+        VBox entityView = new VBox();
+        entityView.setSpacing(32);
+        entityView.setPadding(new Insets(32));
+        entityView.setAlignment(Pos.BOTTOM_CENTER);
+
+        selectedEntityImageView = new ImageView();
+        selectedEntityImageView.setImage(sprites);
+        selectedEntityImageView.setFitWidth(256);
+        selectedEntityImageView.setFitHeight(256);
+        DropShadow ds = new DropShadow( 50, Color.BLACK );
+        selectedEntityImageView.setEffect(ds);
+        setSelectedEntity(1);
+        entityView.getChildren().add(selectedEntityImageView);
+
+        HBox entityChooser = new HBox();
+        entityChooser.setSpacing(10);
+        for (int i = 0; i < 9; i++) {
+            Button entityButton = new Button();
+            ImageView entityImage = new ImageView();
+            entityImage.setImage(sprites);
+            Rectangle2D rect = new Rectangle2D(i*64,0,64,64);
+            entityImage.setViewport(rect);
+            entityButton.setGraphic(entityImage);
+            final int entityNumber = i + 1;
+            entityButton.setOnAction((ActionEvent e) -> setSelectedEntity(entityNumber));
+            entityChooser.getChildren().add(entityButton);
+        }
+        entityChooser.setMaxWidth(1604);
+        entityChooser.setAlignment(Pos.CENTER);
+        entityView.getChildren().add(entityChooser);
+        borderPane.setCenter(entityView);
+        borderPane.setAlignment(entityChooser, Pos.BOTTOM_CENTER);
+
+
+        rootPane.getChildren().add(borderPane);
+
+        GraphicsContext gc = miniMapCanvas.getGraphicsContext2D();
+
 
         new AnimationTimer() {
             @Override
@@ -104,7 +189,7 @@ public class GamePlayer extends Application {
 
                     if (k == KeyCode.X && keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) requestPost("reset=true");
 
-                    if (keysPressed.contains(KeyCode.ALT)) {
+                    /*if (keysPressed.contains(KeyCode.ALT)) {
                         if (k == KeyCode.Q) requestPost("add=1");
                         if (k == KeyCode.W) requestPost("add=2");
                         if (k == KeyCode.E) requestPost("add=3");
@@ -125,7 +210,7 @@ public class GamePlayer extends Application {
                         if (k == KeyCode.K) requestPost("add=18");
                         if (k == KeyCode.L) requestPost("add=19");
                         if (k == KeyCode.SEMICOLON) requestPost("add=20");
-                    }
+                    }*/
 
                 }
 
@@ -136,12 +221,12 @@ public class GamePlayer extends Application {
                     for (int x = 0; x < MAX_X; x++) {
                         for (int y = 0; y < MAX_Y; y++) {
                             if (map[x][y] < 128) {
-                                gc.setFill(Color.NAVY);
+                                gc.setFill(Color.BLACK);
                             }
                             else {
                                 gc.setFill(Color.BLUE);
                             }
-                            gc.fillRect(158 + x*4, 50 + y*4, 4, 4);
+                            gc.fillRect( x*4, y*4, 4, 4);
                         }
                     }
                 }
@@ -173,7 +258,7 @@ public class GamePlayer extends Application {
                             int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
 
                             gc.setFill(Color.WHITE);
-                            gc.fillRect(158 + x, 50 + y, 4, 4);
+                            gc.fillRect(x, y, 4, 4);
                         }
 
                     }
@@ -334,3 +419,4 @@ public class GamePlayer extends Application {
 
     }
 }
+
