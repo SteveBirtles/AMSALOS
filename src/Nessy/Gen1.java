@@ -128,6 +128,52 @@ public class Gen1 {
             for(int i=minx;i<=minx+sx;i++)for(int j=miny;j<=miny+sy;j++)cells[i][j]=0;
         }
 
+        for (int p = 0; p < width; p++) {
+            for (int q = 0; q < height; q++) {
+                if (cells[p][q] == 128) {
+
+                    if (p == 0) {
+                        cells[p][q] = (cells[p+1][q] >= 128) ? 143 : 135;
+                        continue;
+                    }
+                    if (q == 0) {
+                        cells[p][q] = (cells[p][q+1] >= 128) ? 143 : 141;
+                        continue;
+                    }
+                    if (p == width-1) {
+                        cells[p][q] = (cells[p-1][q] >= 128) ? 143 : 139;
+                        continue;
+                    }
+                    if (q == height-1) {
+                        cells[p][q] = (cells[p][q-1] >= 128) ? 143 : 142;
+                        continue;
+                    }
+
+                    boolean north = cells[p][q-1] >= 128;
+                    boolean south = cells[p][q+1] >= 128;
+                    boolean east = cells[p+1][q] >= 128;
+                    boolean west = cells[p-1][q] >= 128;
+
+                    if (north && !south && !east && !west) cells[p][q] = 129;
+                    else if (!north && south && !east && !west) cells[p][q] = 130;
+                    else if (north && south && !east && !west) cells[p][q] = 131;
+                    else if (!north && !south && !east && west) cells[p][q] = 132;
+                    else if (north && !south && !east && west) cells[p][q] = 133;
+                    else if (!north && south && !east && west) cells[p][q] = 134;
+                    else if (north && south && !east && west) cells[p][q] = 135;
+                    else if (!north && !south && east && !west) cells[p][q] = 136;
+                    else if (north && !south && east && !west) cells[p][q] = 137;
+                    else if (!north && south && east && !west) cells[p][q] = 138;
+                    else if (north && south && east && !west) cells[p][q] = 139;
+                    else if (!north && !south && east && west) cells[p][q] = 140;
+                    else if (north && !south && east && west) cells[p][q] = 141;
+                    else if (!north && south && east && west) cells[p][q] = 142;
+                    else if (north && south && east && west) cells[p][q] = 143;
+                }
+            }
+        }
+
         return cells;
     }
 }
+

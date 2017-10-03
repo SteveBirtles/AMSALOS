@@ -41,6 +41,7 @@ public class GamePlayer extends Application {
     public static final int WINDOW_HEIGHT = 1080;
     public static final int MAX_X = 401;
     public static final int MAX_Y = 17;
+    public static final int SPRITE_COUNT = 9;
 
     //public static int screen = 0;
     public static long maptimestamp = 0;
@@ -114,6 +115,11 @@ public class GamePlayer extends Application {
                 "-fx-border-color: blue;" +
                 "-fx-background-color: white");
 
+        Image logo = new Image("resources/Amsalos.png");
+        ImageView logoView = new ImageView(logo);
+        borderPane.setTop(logoView);
+        borderPane.setAlignment(logoView, Pos.TOP_CENTER);
+
         Canvas miniMapCanvas = new Canvas();
         miniMapCanvas.setWidth(1604);
         miniMapCanvas.setHeight(68);
@@ -122,18 +128,26 @@ public class GamePlayer extends Application {
 
         HBox screenButtons = new HBox();
         screenButtons.setSpacing(10);
-        screenButtons.setPadding(new Insets(5));
+        screenButtons.setPadding(new Insets(5,5,0,10));
         for (int i = 1; i <= 20; i++) {
             Button screenButton = new Button(Integer.toString(i));
-            screenButton.setPrefSize(70, 40);
-            screenButton.setFont(new Font(24));
+            screenButton.setPrefSize(70, 30);
+            screenButton.setStyle(  "-fx-border-color: transparent;\n" +
+                                    "-fx-border-width: 0;\n" +
+                                    "-fx-background-radius: 0;\n" +
+                                    "-fx-background-color: navy;" +
+                                    "-fx-font-size: 24;" +
+                                    "-fx-font-family: monospace;" +
+                                    "-fx-font-weight: bold;" +
+                                    "-fx-text-fill: white;");
+
             final int screenNumber = i;
             screenButton.setOnAction((ActionEvent ae) -> addEntity(screenNumber));
             screenButtons.getChildren().add(screenButton);
         }
 
         VBox miniMapHBox = new VBox();
-        miniMapHBox.setSpacing(10);
+        miniMapHBox.setSpacing(5);
         miniMapHBox.getChildren().add(screenButtons);
         miniMapHBox.getChildren().add(miniMapCanvas);
         miniMapHBox.setMaxWidth(1604);
@@ -142,27 +156,32 @@ public class GamePlayer extends Application {
 
         VBox entityView = new VBox();
         entityView.setSpacing(32);
+        entityView.setStyle("-fx-background-color: black");
         entityView.setPadding(new Insets(32));
         entityView.setAlignment(Pos.BOTTOM_CENTER);
 
         selectedEntityImageView = new ImageView();
         selectedEntityImageView.setImage(sprites);
-        selectedEntityImageView.setFitWidth(256);
-        selectedEntityImageView.setFitHeight(256);
-        DropShadow ds = new DropShadow( 50, Color.BLACK );
+        selectedEntityImageView.setFitWidth(384);
+        selectedEntityImageView.setFitHeight(384);
+        DropShadow ds = new DropShadow( 64, Color.WHITE );
         selectedEntityImageView.setEffect(ds);
         setSelectedEntity(1);
         entityView.getChildren().add(selectedEntityImageView);
 
         HBox entityChooser = new HBox();
         entityChooser.setSpacing(10);
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < SPRITE_COUNT; i++) {
             Button entityButton = new Button();
             ImageView entityImage = new ImageView();
             entityImage.setImage(sprites);
             Rectangle2D rect = new Rectangle2D(i*64,0,64,64);
             entityImage.setViewport(rect);
             entityButton.setGraphic(entityImage);
+            entityButton.setStyle(  "-fx-border-color: transparent;\n" +
+                    "-fx-border-width: 0;\n" +
+                    "-fx-background-radius: 0;\n" +
+                    "-fx-background-color: lightslategray;");
             final int entityNumber = i + 1;
             entityButton.setOnAction((ActionEvent e) -> setSelectedEntity(entityNumber));
             entityChooser.getChildren().add(entityButton);
