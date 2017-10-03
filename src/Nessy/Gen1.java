@@ -26,10 +26,11 @@ public class Gen1 {
     }
 
     //Generalised for mazes of different dimensions, just in case
-    public static int[][]generate(int width,int height){
+    public static int[][]generate(int width,int height, long seed){
         int[][]cells=new int[width][height];
         boolean[][]visited=new boolean[width/2][height/2],closed=new boolean[200][8];
-        Random rand=new Random();
+
+        Random rand=new Random(seed);
 
         //Populate arrays
         for(int x=0;x<width;x++)for(int y=0;y<height;y++)cells[x][y]=(x%2==1&&y%2==1)?0:128;

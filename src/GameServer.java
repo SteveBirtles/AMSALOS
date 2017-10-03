@@ -33,9 +33,10 @@ public class GameServer extends AbstractHandler {
 
         public void run() {
 
-            Random rnd = new Random();
-
             long present = System.currentTimeMillis() >> 8;
+
+            Random rnd = new Random(present);
+
             long future = present + 4;
             long past = present - 2;
 
@@ -270,12 +271,14 @@ public class GameServer extends AbstractHandler {
 
         long t = System.currentTimeMillis() >> 8;
 
+        Random rnd = new Random(t);
+
         synchronized (worldentities) {
 
             int existingEntities = worldentities.size();
 
             for (int i = 1; i <= entityCount; i++) {
-                Random rnd = new Random();
+
                 Entity newE = new Entity(existingEntities + i, rnd.nextInt(9) + 1);
 
                 int x, y;
@@ -314,7 +317,9 @@ public class GameServer extends AbstractHandler {
 
     public void createMap() {
 
-        map = generate(MAX_X, MAX_Y);
+        maptimestamp = System.currentTimeMillis() >> 8;
+
+        map = generate(MAX_X, MAX_Y, maptimestamp);
 
         for (int s = 0; s < SCREEN_COUNT; s++) {
             StringBuilder mapScreen = new StringBuilder();
@@ -336,8 +341,6 @@ public class GameServer extends AbstractHandler {
             }
         }
         fullEncodedMap = fullMap.toString();
-
-        maptimestamp = System.currentTimeMillis() >> 8;
 
     }
 

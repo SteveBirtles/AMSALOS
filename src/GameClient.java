@@ -106,9 +106,6 @@ public class GameClient extends Application {
 
                     if (k == KeyCode.TAB) screen = 0;
 
-                    if (k == KeyCode.SPACE && keysPressed.contains(KeyCode.CONTROL)) requestPost("add=0");
-                    if (k == KeyCode.X && keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) requestPost("reset=true");
-
                     if (keysPressed.contains(KeyCode.ALT)) {
                         if (k == KeyCode.Q) screen = 1;
                         if (k == KeyCode.W) screen = 2;

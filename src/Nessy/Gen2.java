@@ -23,11 +23,11 @@ public class Gen2{
 
     //Generalised, just in case
     //Border makes the outer-most cells usable if false, else unusable
-    public static int[][]generate(int width,int height,boolean border){
+    public static int[][]generate(int width,int height,boolean border, long seed){
         int[][]cells=new int[width][height];
         ArrayList<double[]>cavernPos=new ArrayList<>();
         int maxx=(border)?1:0,rx=-5,ry;
-        Random rand=new Random();
+        Random rand=new Random(seed);
 
         //Initialise all cells as non-walkable
         for(int i=0;i<width;i++)for(int j=0;j<height;j++)cells[i][j]=128;
