@@ -48,66 +48,54 @@ public class QuickMazeMaker {
     
     public static int[][] fixEdges(int[][] maze) {
 
-        Random rnd = new Random();
-
         int width = maze.length;
         int height = maze[0].length;
         
         for (int p = 0; p < width; p++) {
             for (int q = 0; q < height; q++) {
-                if (maze[p][q] >= 128) {
 
-                    int quarter1 = 0;
-                    int quarter2 = 0;
-                    int quarter3 = 0;
-                    int quarter4 = 0;
+                boolean solid = maze[p][q]%256 >= 128;
 
-                    /*if (p == width-1 && q == height-1) quarter1 = 2;
-                    else if (p == 0 && q == height-1) quarter2 = 2;
-                    else if (p == width-1 && q == 0) quarter3 = 2;
-                    else if (p == 0 && q == 0) quarter4 = 2;
-                    else if (p == 0) { quarter2 = 4; quarter4 = 4; }
-                    else if (q == 0) { quarter3 = 3; quarter4 = 3; }
-                    else if (p == width-1) { quarter1 = 4; quarter3 = 4; }
-                    else if (q == height-1) { quarter1 = 3; quarter2 = 3; }
-                    else {*/
+                int quarter1 = 0;
+                int quarter2 = 0;
+                int quarter3 = 0;
+                int quarter4 = 0;
 
-                    boolean north   = q > 0         && maze[p][q - 1] >= 128;
-                    boolean south   = q < height-1  && maze[p][q + 1] >= 128;
-                    boolean east    = p < width-1   && maze[p + 1][q] >= 128;
-                    boolean west    = p > 0         && maze[p - 1][q] >= 128;
+                boolean north   = q > 0         &&  (solid ? maze[p][q - 1]%256 >= 128 : maze[p][q - 1]%256 < 128);
+                boolean south   = q < height-1  &&  (solid ? maze[p][q + 1]%256 >= 128 : maze[p][q + 1]%256 < 128);
+                boolean east    = p < width-1   &&  (solid ? maze[p + 1][q]%256 >= 128 : maze[p + 1][q]%256 < 128);
+                boolean west    = p > 0         &&  (solid ? maze[p - 1][q]%256 >= 128 : maze[p - 1][q]%256 < 128);
 
-                    boolean north_east = q > 0          && p < width-1  && maze[p + 1][q - 1] >= 128;
-                    boolean north_west = q > 0          && p > 0        && maze[p - 1][q - 1] >= 128;
-                    boolean south_east = q < height-1   && p < width-1  && maze[p + 1][q + 1] >= 128;
-                    boolean south_west = q < height-1   && p > 0        && maze[p - 1][q + 1] >= 128;
+                boolean north_east = q > 0          && p < width-1  &&  (solid ? maze[p + 1][q - 1]%256 >= 128 : maze[p + 1][q - 1]%256 < 128);
+                boolean north_west = q > 0          && p > 0        &&  (solid ? maze[p - 1][q - 1]%256 >= 128 : maze[p - 1][q - 1]%256 < 128);
+                boolean south_east = q < height-1   && p < width-1  &&  (solid ? maze[p + 1][q + 1]%256 >= 128 : maze[p + 1][q + 1]%256 < 128);
+                boolean south_west = q < height-1   && p > 0        &&  (solid ? maze[p - 1][q + 1]%256 >= 128 : maze[p - 1][q + 1]%256 < 128);
 
-                    if (!north && !west)                quarter1 = 1;
-                    if (!north_west && north && west)   quarter1 = 2;
-                    if (!north && west)                 quarter1 = 3;
-                    if (north && !west)                 quarter1 = 4;
+                if (!north && !west)                quarter1 = 1;
+                if (!north_west && north && west)   quarter1 = 2;
+                if (!north && west)                 quarter1 = 3;
+                if (north && !west)                 quarter1 = 4;
 
-                    if (!north && !east)                quarter2 = 1;
-                    if (!north_east && north && east)   quarter2 = 2;
-                    if (!north && east)                 quarter2 = 3;
-                    if (north && !east)                 quarter2 = 4;
+                if (!north && !east)                quarter2 = 1;
+                if (!north_east && north && east)   quarter2 = 2;
+                if (!north && east)                 quarter2 = 3;
+                if (north && !east)                 quarter2 = 4;
 
-                    if (!south && !west)                quarter3 = 1;
-                    if (!south_west && south && west)   quarter3 = 2;
-                    if (!south && west)                 quarter3 = 3;
-                    if (south && !west)                 quarter3 = 4;
+                if (!south && !west)                quarter3 = 1;
+                if (!south_west && south && west)   quarter3 = 2;
+                if (!south && west)                 quarter3 = 3;
+                if (south && !west)                 quarter3 = 4;
 
-                    if (!south && !east)                quarter4 = 1;
-                    if (!south_east && south && east)   quarter4 = 2;
-                    if (!south && east)                 quarter4 = 3;
-                    if (south && !east)                 quarter4 = 4;
+                if (!south && !east)                quarter4 = 1;
+                if (!south_east && south && east)   quarter4 = 2;
+                if (!south && east)                 quarter4 = 3;
+                if (south && !east)                 quarter4 = 4;
 
-                    maze[p][q] += 256 * quarter1;
-                    maze[p][q] += 256 * 16 * quarter2;
-                    maze[p][q] += 256 * 256 * quarter3;
-                    maze[p][q] += 256 * 4096 * quarter4;
+                maze[p][q] += 256 * quarter1;
+                maze[p][q] += 256 * 16 * quarter2;
+                maze[p][q] += 256 * 256 * quarter3;
+                maze[p][q] += 256 * 4096 * quarter4;
 
-                }
             }
         }
 

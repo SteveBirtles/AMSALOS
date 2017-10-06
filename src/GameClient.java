@@ -43,7 +43,7 @@ public class GameClient extends Application {
     static int viewportPosition = 0;
 
     public static String serverAddress = "localhost";
-    public static boolean fullscreen = false;
+    public static boolean fullscreen = true;
 
     public static int[][] map = null;
 
