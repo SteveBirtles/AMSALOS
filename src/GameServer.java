@@ -59,23 +59,23 @@ public class GameServer extends AbstractHandler {
                         int target_y = y + e.dy;
 
                         boolean[] clearDirections = new boolean[4];
-                        clearDirections[0] = y > 0 && map[x][y-1] < 128;
-                        clearDirections[1] = x < MAX_X-1 && map[x+1][y] < 128;
-                        clearDirections[2] = y < MAX_Y-1 && map[x][y+1] < 128;
-                        clearDirections[3] = x > 0 && map[x-1][y] < 128;
+                        clearDirections[0] = y > 0 && map[x][y-1]%256 < 128;
+                        clearDirections[1] = x < MAX_X-1 && map[x+1][y]%256 < 128;
+                        clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
+                        clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
                         int noOfClearDirections = Entity.noOfClearDirections(clearDirections);
 
                         boolean[] clearDiagonals = new boolean[4];
-                        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && map[x+1][y-1] < 128;
-                        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && map[x+1][y+1] < 128;
-                        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && map[x-1][y+1] < 128;
-                        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && map[x-1][y-1] < 128;
+                        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && map[x+1][y-1]%256 < 128;
+                        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && map[x+1][y+1]%256 < 128;
+                        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && map[x-1][y+1]%256 < 128;
+                        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && map[x-1][y-1]%256 < 128;
                         int noOfClearDiagonals = Entity.noOfClearDirections(clearDiagonals);
 
                         if (target_x < 0 || target_y < 0
                                 || target_x >= MAX_X || target_y >= MAX_Y
                                 || (noOfClearDirections == 3 && noOfClearDiagonals < 3)
-                                || map[target_x][target_y] > 127)
+                                || map[target_x][target_y]%256 > 127)
                         {
                             if (noOfClearDirections > 1) {
                                 if (e.dy > 0) clearDirections[0] = false;
@@ -293,16 +293,16 @@ public class GameServer extends AbstractHandler {
                         x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
                     }
                     y = rnd.nextInt(MAX_Y);
-                } while (map[x][y] > 127);
+                } while (map[x][y%256 > 127);
 
                 newE.xMap.put(t, x);
                 newE.yMap.put(t, y);
 
                 boolean[] clearDirections = new boolean[4];
-                clearDirections[0] = y > 0 && map[x][y-1] < 128;
-                clearDirections[1] = x < MAX_X-1 && map[x+1][y] < 128;
-                clearDirections[2] = y < MAX_Y-1 && map[x][y+1] < 128;
-                clearDirections[3] = x > 0 && map[x-1][y] < 128;
+                clearDirections[0] = y > 0 && map[x][y-1]%256 < 128;
+                clearDirections[1] = x < MAX_X-1 && map[x+1][y]%256 < 128;
+                clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
+                clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
 
                 newE.pickRandomDirection(clearDirections, rnd);
 
