@@ -63,12 +63,11 @@ public class GameClient extends Application {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage stage) {
 
         Pane rootPane = new Pane();
         Scene scene = new Scene(rootPane);
 
-        Stage stage = new Stage();
         stage.setTitle("AMSALOS CLIENT");
         stage.setResizable(false);
         stage.setFullScreen(fullscreen);
@@ -142,9 +141,37 @@ public class GameClient extends Application {
                 if (map != null) {
                     for (int x = 0; x < MAX_X; x++) {
                         for (int y = 0; y < MAX_Y; y++) {
-                            int column = map[x][y] % 16;
-                            int row = map[x][y] / 16;
-                            gc.drawImage(tiles, column * 64, row * 64, 64, 64, x * 64 - 32, y * 64 - 32, 64, 64);
+
+                            int value = map[x][y];
+                            int baseTile = value % 256;
+
+                            int column = baseTile % 16;
+                            int row = baseTile / 16;
+
+                            if (value >= 256) {
+
+                                int quarterValues = value / 256;
+
+                                int quarter1 = (quarterValues) % 16;
+                                int quarter2 = (quarterValues >> 4) % 16;
+                                int quarter3 = (quarterValues >> 8) % 16;
+                                int quarter4 = (quarterValues >> 12) % 16;
+
+                                column = (baseTile + quarter1) % 16;
+                                gc.drawImage(tiles, column * 64, row * 64, 32, 32, x * 64 - 32, y * 64 - 32, 32, 32);
+
+                                column = (baseTile + quarter2) % 16;
+                                gc.drawImage(tiles, column * 64 + 32, row * 64, 32, 32, x * 64, y * 64 - 32, 32, 32);
+
+                                column = (baseTile + quarter3) % 16;
+                                gc.drawImage(tiles, column * 64, row * 64 + 32, 32, 32, x * 64 - 32, y * 64 , 32, 32);
+
+                                column = (baseTile + quarter4) % 16;
+                                gc.drawImage(tiles, column * 64 + 32, row * 64 + 32, 32, 32, x * 64 , y * 64, 32, 32);
+                            }
+                            else {
+                                gc.drawImage(tiles, column * 64, row * 64, 64, 64, x * 64 - 32, y * 64 - 32, 64, 64);
+                            }
                         }
                     }
                 }

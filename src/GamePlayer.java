@@ -84,12 +84,11 @@ public class GamePlayer extends Application {
 
     @SuppressWarnings("Duplicates")
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage stage) {
 
         Pane rootPane = new Pane();
         Scene scene = new Scene(rootPane);
 
-        Stage stage = new Stage();
         stage.setTitle("AMSALOS PLAYER");
         stage.setResizable(false);
         stage.setFullScreen(fullscreen);
@@ -214,30 +213,6 @@ public class GamePlayer extends Application {
                             requestPost("reset=2");
                         }
                     }
-
-                    /*if (keysPressed.contains(KeyCode.ALT)) {
-                        if (k == KeyCode.Q) requestPost("add=1");
-                        if (k == KeyCode.W) requestPost("add=2");
-                        if (k == KeyCode.E) requestPost("add=3");
-                        if (k == KeyCode.R) requestPost("add=4");
-                        if (k == KeyCode.T) requestPost("add=5");
-                        if (k == KeyCode.Y) requestPost("add=6");
-                        if (k == KeyCode.U) requestPost("add=7");
-                        if (k == KeyCode.I) requestPost("add=8");
-                        if (k == KeyCode.O) requestPost("add=9");
-                        if (k == KeyCode.P) requestPost("add=10");
-                        if (k == KeyCode.A) requestPost("add=11");
-                        if (k == KeyCode.S) requestPost("add=12");
-                        if (k == KeyCode.D) requestPost("add=13");
-                        if (k == KeyCode.F) requestPost("add=14");
-                        if (k == KeyCode.G) requestPost("add=15");
-                        if (k == KeyCode.H) requestPost("add=16");
-                        if (k == KeyCode.J) requestPost("add=17");
-                        if (k == KeyCode.K) requestPost("add=18");
-                        if (k == KeyCode.L) requestPost("add=19");
-                        if (k == KeyCode.SEMICOLON) requestPost("add=20");
-                    }*/
-
                 }
 
                 gc.setFill(Color.BLACK);
