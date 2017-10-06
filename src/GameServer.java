@@ -293,7 +293,7 @@ public class GameServer extends AbstractHandler {
                         x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
                     }
                     y = rnd.nextInt(MAX_Y);
-                } while (map[x][y%256 > 127);
+                } while (map[x][y]%256 > 127);
 
                 newE.xMap.put(t, x);
                 newE.yMap.put(t, y);
