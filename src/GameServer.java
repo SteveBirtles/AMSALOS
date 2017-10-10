@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.json.simple.JSONObject;
-//import static Nessy;
 
 public class GameServer extends AbstractHandler {
 
@@ -330,6 +329,9 @@ public class GameServer extends AbstractHandler {
             case 2:
                 map = Nessy.Gen2.generate(MAX_X, MAX_Y, true, maptimestamp);
                 break;
+            case 3:
+                map = Lewis.MapGen.makeMap();
+                break;
         }
 
         map = Steve.QuickMazeMaker.fixEdges(map);
@@ -360,7 +362,7 @@ public class GameServer extends AbstractHandler {
     public static void main(String[] args) throws Exception {
 
         GameServer gameServer = new GameServer();
-        gameServer.createMap(1);
+        gameServer.createMap(3);
         gameServer.startEntityTimer();
 
         Server server = new Server(8081);
