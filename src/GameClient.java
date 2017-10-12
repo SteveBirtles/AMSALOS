@@ -206,7 +206,7 @@ public class GameClient extends Application {
                             gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
 
                             gc.setFill(Color.rgb(0,255,0));
-                            gc.fillRect(x, y - 20, 64, 16);
+                            gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64, 10);
 
                         }
 
