@@ -36,6 +36,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 public class GamePlayer extends Application {
 
@@ -81,7 +82,8 @@ public class GamePlayer extends Application {
     }
 
     public void addEntity(int screen) {
-        requestPost("add=" + selectedEntity + "&screen=" + screen);
+        int aiType = new Random().nextInt(2) + 1;
+        requestPost("add=" + selectedEntity + "&screen=" + screen + "&aitype=" + aiType);
     }
 
     @SuppressWarnings("Duplicates")
@@ -213,6 +215,9 @@ public class GamePlayer extends Application {
                         }
                         else if (k == KeyCode.X) {
                             requestPost("reset=2");
+                        }
+                        else if (k == KeyCode.C) {
+                            requestPost("reset=3");
                         }
                     }
                 }

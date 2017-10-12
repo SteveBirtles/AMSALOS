@@ -4,15 +4,15 @@ import java.util.Random;
 
 public class MapGen {
 
-    public static int[][] makeMap() {
+    public static int[][] makeMap(long seed) {
 
         int[][] map;
         int minRoomWidth = 2; //absolute minimum is 1
-        int maxRoomWidth = 10;
+        int maxRoomWidth = 12;
         int minRoomHeight = 2; //absolute minimum is 1
         int maxRoomHeight = 6; //absolute maximum is 6
         int roomNumber = 0;
-        Random rand = new Random();
+        Random rand=new Random(seed);
 
         map = new int[17][401];
         for (int i = 0; i <= 16; i++) {

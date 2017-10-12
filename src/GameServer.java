@@ -1,6 +1,7 @@
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.json.simple.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -9,8 +10,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import org.json.simple.JSONObject;
 
 public class GameServer extends AbstractHandler {
 
@@ -51,48 +50,44 @@ public class GameServer extends AbstractHandler {
 
                     if (future != last && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
 
-                        int x = e.xMap.get(last);
-                        int y = e.yMap.get(last);
+                        int currentX = e.xMap.get(last);
+                        int currentY = e.yMap.get(last);
 
-                        int target_x = x + e.dx;
-                        int target_y = y + e.dy;
-
-                        boolean[] clearDirections = new boolean[4];
-                        clearDirections[0] = y > 0 && map[x][y-1]%256 < 128;
-                        clearDirections[1] = x < MAX_X-1 && map[x+1][y]%256 < 128;
-                        clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
-                        clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
-                        int noOfClearDirections = Entity.noOfClearDirections(clearDirections);
-
-                        boolean[] clearDiagonals = new boolean[4];
-                        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && map[x+1][y-1]%256 < 128;
-                        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && map[x+1][y+1]%256 < 128;
-                        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && map[x-1][y+1]%256 < 128;
-                        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && map[x-1][y-1]%256 < 128;
-                        int noOfClearDiagonals = Entity.noOfClearDirections(clearDiagonals);
-
-                        if (target_x < 0 || target_y < 0
-                                || target_x >= MAX_X || target_y >= MAX_Y
-                                || (noOfClearDirections == 3 && noOfClearDiagonals < 3)
-                                || map[target_x][target_y]%256 > 127)
-                        {
-                            if (noOfClearDirections > 1) {
-                                if (e.dy > 0) clearDirections[0] = false;
-                                if (e.dx < 0) clearDirections[1] = false;
-                                if (e.dy < 0) clearDirections[2] = false;
-                                if (e.dx > 0) clearDirections[3] = false;
-                            }
-                            e.pickRandomDirection(clearDirections, rnd);
-                            x += e.dx;
-                            y += e.dy;
+                        switch (e.getAIType()) {
+                            case 0:
+                                e.dx = 0;
+                                e.dy = 0;
+                                e.xMap.put(future, currentX);
+                                e.yMap.put(future, currentY);
+                                break;
+                            case 1:
+                                e.dy = 0;
+                                if (e.dx == 0) e.dx = rnd.nextInt(2) == 0 ? -1 : 1;
+                                int newX = currentX + e.dx;
+                                if (newX < 0 || newX >= MAX_X || map[newX][currentY] % 256 >= 128) {
+                                    newX = currentX;
+                                    e.dx = -e.dx;
+                                }
+                                e.xMap.put(future, newX);
+                                e.yMap.put(future, currentY);
+                                break;
+                            case 2:
+                                e.dx = 0;
+                                if (e.dy == 0) e.dy = rnd.nextInt(2) == 0 ? -1 : 1;
+                                int newY = currentY + e.dy;
+                                if (newY < 0 || newY >= MAX_Y || map[currentX][newY] % 256 >= 128) {
+                                    newY = currentY;
+                                    e.dy = -e.dy;
+                                }
+                                e.xMap.put(future, currentX);
+                                e.yMap.put(future, newY);
+                                break;
+                            case 3:
+                                XY target = Wander.calculateNext(currentX, currentY, e, map, rnd);
+                                e.xMap.put(future, target.x);
+                                e.yMap.put(future, target.y);
+                                break;
                         }
-                        else {
-                            x = target_x;
-                            y = target_y;
-                        }
-
-                        e.xMap.put(future, x);
-                        e.yMap.put(future, y);
 
                     }
 
@@ -119,6 +114,7 @@ public class GameServer extends AbstractHandler {
         int position = 1;
         int addEntity = -1;
         int resetAll = -1;
+        int aiType = 0;
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
             position = Integer.parseInt(ip[3]);
@@ -178,8 +174,9 @@ public class GameServer extends AbstractHandler {
                         else if (variable.equals("reset")) {
                             resetAll = Integer.parseInt(value);
                         }
-
-
+                        else if (variable.equals("aitype")) {
+                            aiType = Integer.parseInt(value);
+                        }
 
                     }
 
@@ -196,7 +193,7 @@ public class GameServer extends AbstractHandler {
         if (method.equals("POST")) {
 
             if ( addEntity != -1) {
-                createEntities(1, position, addEntity);
+                createEntities(1, position, addEntity, aiType);
             }
             else if (resetAll != -1) {
                 long t = System.currentTimeMillis() >> 8;
@@ -270,7 +267,7 @@ public class GameServer extends AbstractHandler {
 
     }
 
-    public void createEntities(int entityCount, int screenNo, int type) {
+    public void createEntities(int entityCount, int screenNo, int type, int aiType) {
 
         long t = System.currentTimeMillis() >> 8;
 
@@ -283,6 +280,7 @@ public class GameServer extends AbstractHandler {
             for (int i = 1; i <= entityCount; i++) {
 
                 Entity newE = new Entity(existingEntities + i, type);
+                newE.setAiType(aiType);
 
                 int x, y;
                 do {
@@ -303,7 +301,7 @@ public class GameServer extends AbstractHandler {
                 clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
                 clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
 
-                newE.pickRandomDirection(clearDirections, rnd);
+                Wander.pickRandomDirection(clearDirections, newE, rnd);
 
                 worldentities.add(newE);
             }
@@ -330,7 +328,7 @@ public class GameServer extends AbstractHandler {
                 map = Nessy.Gen2.generate(MAX_X, MAX_Y, true, maptimestamp);
                 break;
             case 3:
-                map = Lewis.MapGen.makeMap();
+                map = Lewis.MapGen.makeMap(maptimestamp);
                 break;
         }
 

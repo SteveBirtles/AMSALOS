@@ -1,9 +1,9 @@
 import java.util.HashMap;
-import java.util.Random;
 
 public class Entity {
     private int id;
     private int type;
+    private int aiType;
 
     public HashMap<Long, Integer> xMap;
     public HashMap<Long, Integer> yMap;
@@ -14,6 +14,7 @@ public class Entity {
     public Entity(int id, int type) {
         this.id = id;
         this.type = type;
+        this.aiType = 0;
         this.xMap = new HashMap<>();
         this.yMap = new HashMap<>();
         this.dx = 0;
@@ -26,47 +27,10 @@ public class Entity {
     public int getType() {
         return this.type;
     }
-
-    public static int noOfClearDirections(boolean[] clearDirections) {
-        int count = 0;
-        for (int i = 0; i < 4; i++) {
-            if (clearDirections[i]) count++;
-        }
-        return count;
+    public int getAIType() {
+        return this.aiType;
     }
-
-    public void pickRandomDirection(boolean[] clearDirections, Random rnd) {
-
-        if (noOfClearDirections(clearDirections) == 0) {
-            dx = 0;
-            dy = 0;
-            return;
-        }
-
-        int d;
-        do {
-            d = rnd.nextInt(4);
-        } while (clearDirections[d] == false);
-
-        switch (d) {
-            case 0: // NORTH
-                this.dx = 0;
-                this.dy = -1;
-                break;
-            case 1: // EAST
-                this.dx = 1;
-                this.dy = 0;
-                break;
-            case 2: // SOUTH
-                this.dx = 0;
-                this.dy = 1;
-                break;
-            case 3: // WEST
-                this.dx = -1;
-                this.dy = 0;
-                break;
-        }
-    }
+    public void setAiType(int aiType) {this.aiType = aiType; }
 
 }
 
