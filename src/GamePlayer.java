@@ -43,7 +43,7 @@ public class GamePlayer extends Application {
     public static final int WINDOW_HEIGHT = 1080;
     public static final int MAX_X = 401;
     public static final int MAX_Y = 17;
-    public static final int SPRITE_COUNT = 9;
+    public static final int SPRITE_COUNT = 16;
 
     //public static int screen = 0;
     public static long maptimestamp = 0;
