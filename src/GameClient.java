@@ -204,6 +204,10 @@ public class GameClient extends Application {
                             int column = (e.getType() - 1) % 16;
                             int row = (e.getType() - 1) / 16;
                             gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
+
+                            gc.setFill(Color.rgb(0,255,0));
+                            gc.fillRect(x, y - 20, 64, 16);
+
                         }
 
                     }
