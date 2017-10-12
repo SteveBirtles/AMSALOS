@@ -27,6 +27,17 @@ public class GameServer extends AbstractHandler {
     private final String[] encodedMap = new String[SCREEN_COUNT];
     private String fullEncodedMap = "";
 
+    public class EntitySpawner extends TimerTask {
+
+        public void run() {
+            Random rnd = new Random();
+            int screen = rnd.nextInt(20) + 1;
+            int type = rnd.nextInt(12) + 4;
+            createEntities(1, screen, type, 3);
+        }
+    }
+
+
     public class EntityUpdater extends TimerTask {
 
         public void run() {
@@ -309,10 +320,13 @@ public class GameServer extends AbstractHandler {
 
     }
 
-    public void startEntityTimer() {
+    public void startTimers() {
 
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new EntityUpdater(), 0, 256);
+        Timer timer1 = new Timer();
+        timer1.scheduleAtFixedRate(new EntityUpdater(), 0, 256);
+
+        Timer timer2 = new Timer();
+        timer2.scheduleAtFixedRate(new EntitySpawner(), 0, 1000);
 
     }
 
@@ -361,7 +375,7 @@ public class GameServer extends AbstractHandler {
 
         GameServer gameServer = new GameServer();
         gameServer.createMap(1);
-        gameServer.startEntityTimer();
+        gameServer.startTimers();
 
         Server server = new Server(8081);
         server.setHandler(gameServer);
