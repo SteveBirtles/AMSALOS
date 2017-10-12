@@ -360,7 +360,7 @@ public class GameServer extends AbstractHandler {
     public static void main(String[] args) throws Exception {
 
         GameServer gameServer = new GameServer();
-        gameServer.createMap(3);
+        gameServer.createMap(1);
         gameServer.startEntityTimer();
 
         Server server = new Server(8081);

@@ -36,7 +36,6 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
 
 public class GamePlayer extends Application {
 
@@ -67,7 +66,7 @@ public class GamePlayer extends Application {
         fullscreen = true;
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
-            if (host.contains("comp1-") && !host.contains("reg")) {
+            if (host.equals("comp1-reg")) {
                 serverAddress = "services.farnborough.ac.uk";
             }
         } catch (UnknownHostException e) {
@@ -82,7 +81,7 @@ public class GamePlayer extends Application {
     }
 
     public void addEntity(int screen) {
-        int aiType = new Random().nextInt(2) + 1;
+        int aiType = (selectedEntity + 1) % 4;
         requestPost("add=" + selectedEntity + "&screen=" + screen + "&aitype=" + aiType);
     }
 
