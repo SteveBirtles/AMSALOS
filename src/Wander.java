@@ -63,7 +63,7 @@ public class Wander {
         int target_x = WANDER_CENTRE + entity.dx;
         int target_y = WANDER_CENTRE + entity.dy;
 
-        if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] != 0) {
+        if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] != 0 || (entity.dx == 0 && entity.dy == 0)) {
             if (noOfClearDirections > 1) {
                 if (entity.dy > 0) clearDirections[0] = false;
                 if (entity.dx < 0) clearDirections[1] = false;
