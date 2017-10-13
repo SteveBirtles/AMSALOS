@@ -131,7 +131,6 @@ public class GameServer extends AbstractHandler {
                                 XY target = Wander.calculateNext(e, vicinity);
                                 target.x += currentX;
                                 target.y += currentY;
-                                System.out.println(e.getId() + ": " + target.x + ", " + target.y);
                                 e.xMap.put(future, target.x);
                                 e.yMap.put(future, target.y);
                                 if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {

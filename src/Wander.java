@@ -50,20 +50,20 @@ public class Wander {
         int target_y = WANDER_CENTRE + entity.dy;
 
         boolean[] clearDirections = new boolean[4];
-        clearDirections[0] = vicinity[WANDER_CENTRE][WANDER_CENTRE - 1] > 0;
-        clearDirections[1] = vicinity[WANDER_CENTRE + 1][WANDER_CENTRE] > 0;
-        clearDirections[2] = vicinity[WANDER_CENTRE][WANDER_CENTRE + 1] > 0;
-        clearDirections[3] = vicinity[WANDER_CENTRE - 1][WANDER_CENTRE] > 0;
+        clearDirections[0] = vicinity[WANDER_CENTRE][WANDER_CENTRE - 1] == 0;
+        clearDirections[1] = vicinity[WANDER_CENTRE + 1][WANDER_CENTRE] == 0;
+        clearDirections[2] = vicinity[WANDER_CENTRE][WANDER_CENTRE + 1] == 0;
+        clearDirections[3] = vicinity[WANDER_CENTRE - 1][WANDER_CENTRE] == 0;
         int noOfClearDirections = noOfClearDirections(clearDirections);
 
         boolean[] clearDiagonals = new boolean[4];
-        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && vicinity[WANDER_CENTRE + 1][WANDER_CENTRE - 1] > 0;
-        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && vicinity[WANDER_CENTRE + 1][WANDER_CENTRE + 1] > 0;
-        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && vicinity[WANDER_CENTRE - 1][WANDER_CENTRE + 1] > 0;
-        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && vicinity[WANDER_CENTRE - 1][WANDER_CENTRE - 1] > 0;
+        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && vicinity[WANDER_CENTRE + 1][WANDER_CENTRE - 1] == 0;
+        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && vicinity[WANDER_CENTRE + 1][WANDER_CENTRE + 1] == 0;
+        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && vicinity[WANDER_CENTRE - 1][WANDER_CENTRE + 1] == 0;
+        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && vicinity[WANDER_CENTRE - 1][WANDER_CENTRE - 1] == 0;
         int noOfClearDiagonals = noOfClearDirections(clearDiagonals);
 
-        if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] == 0) {
+        if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] != 0) {
             if (noOfClearDirections > 1) {
                 if (entity.dy > 0) clearDirections[0] = false;
                 if (entity.dx < 0) clearDirections[1] = false;
