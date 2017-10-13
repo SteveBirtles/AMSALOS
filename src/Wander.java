@@ -1,7 +1,7 @@
 public class Wander {
 
     public static final int WANDER_SIZE = 17;
-    public static final int WANDER_CENTRE = Math.floorDiv(WANDER_SIZE, 2);
+    public static final int WANDER_CENTRE = 8;
     
     private static int noOfClearDirections(boolean[] clearDirections) {
         int count = 0;
@@ -46,9 +46,6 @@ public class Wander {
 
     public static XY calculateNext(Entity entity, int[][] vicinity) {
 
-        int target_x = WANDER_CENTRE + entity.dx;
-        int target_y = WANDER_CENTRE + entity.dy;
-
         boolean[] clearDirections = new boolean[4];
         clearDirections[0] = vicinity[WANDER_CENTRE][WANDER_CENTRE - 1] == 0;
         clearDirections[1] = vicinity[WANDER_CENTRE + 1][WANDER_CENTRE] == 0;
@@ -62,6 +59,9 @@ public class Wander {
         clearDiagonals[2] = clearDirections[2] && clearDirections[3] && vicinity[WANDER_CENTRE - 1][WANDER_CENTRE + 1] == 0;
         clearDiagonals[3] = clearDirections[3] && clearDirections[0] && vicinity[WANDER_CENTRE - 1][WANDER_CENTRE - 1] == 0;
         int noOfClearDiagonals = noOfClearDirections(clearDiagonals);
+
+        int target_x = WANDER_CENTRE + entity.dx;
+        int target_y = WANDER_CENTRE + entity.dy;
 
         if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] != 0) {
             if (noOfClearDirections > 1) {

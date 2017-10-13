@@ -112,12 +112,13 @@ public class GameServer extends AbstractHandler {
                                 e.yMap.put(future, newY);
                                 break;
                             case 3:
+
                                 int[][] vicinity = new int[Wander.WANDER_SIZE][Wander.WANDER_SIZE];
 
                                 for (int i = 0; i < Wander.WANDER_SIZE; i++) {
                                     for (int j = 0; j < Wander.WANDER_SIZE; j++) {
                                         int u = currentX - Wander.WANDER_CENTRE + i;
-                                        int v = currentY - Wander.WANDER_CENTRE + i;
+                                        int v = currentY - Wander.WANDER_CENTRE + j;
                                         if (u >= 0 && v >= 0 && u < MAX_X && v < MAX_Y) {
                                             if (map[u][v] % 256 >= 128) {
                                                 vicinity[i][j] = 1;
