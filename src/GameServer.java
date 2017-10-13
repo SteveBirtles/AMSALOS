@@ -121,7 +121,7 @@ public class GameServer extends AbstractHandler {
                                         if (u >= 0 && v >= 0 && u < MAX_X && v < MAX_Y) {
                                             if (map[u][v] % 256 >= 128) {
                                                 vicinity[i][j] = 1;
-                                            } else if (entityMap[u][v] > 0) {
+                                            } else if (entityMap[u][v] > 0 && entityMap[u][v] != e.getId()) {
                                                 vicinity[i][j] = 2;
                                             }
                                         }
