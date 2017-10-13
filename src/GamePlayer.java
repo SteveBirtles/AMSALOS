@@ -321,7 +321,7 @@ public class GamePlayer extends Application {
             url = new URL( "http://" + serverAddress + ":8081"
                     + "?index=" + clientTime
                     + "&player=true"
-                    + "&maptimestamp=" + maptimestamp
+                    + "&mapTimeStamp=" + maptimestamp
                     + "&map=" + (map == null ? "true" : "false"));
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -368,9 +368,9 @@ public class GamePlayer extends Application {
 
                 }
 
-                if (jsonObject.containsKey("maptimestamp")) {
-                    maptimestamp = Long.parseLong(jsonObject.get("maptimestamp").toString());
-                    //System.out.println("Recieved: " + maptimestamp);
+                if (jsonObject.containsKey("mapTimeStamp")) {
+                    maptimestamp = Long.parseLong(jsonObject.get("mapTimeStamp").toString());
+                    //System.out.println("Recieved: " + mapTimeStamp);
                 }
 
                 if (jsonObject.containsKey("frames")) {

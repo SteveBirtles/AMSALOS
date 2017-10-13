@@ -1,6 +1,10 @@
 import java.util.HashMap;
+import java.util.Random;
 
 public class Entity {
+
+    public Random randomiser;
+
     private int id;
     private int type;
     private int aiType;
@@ -19,6 +23,7 @@ public class Entity {
         this.yMap = new HashMap<>();
         this.dx = 0;
         this.dy = 0;
+        this.randomiser = new Random(id);
     }
 
     public int getId() {

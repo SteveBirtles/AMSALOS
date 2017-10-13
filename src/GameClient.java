@@ -262,7 +262,7 @@ public class GameClient extends Application {
         try {
             url = new URL( "http://" + serverAddress + ":8081"
                                 + "?index=" + clientTime
-                                + "&maptimestamp=" + maptimestamp
+                                + "&mapTimeStamp=" + maptimestamp
                                 + "&map=" + (map == null ? "true" : "false")
                                 + "&screen=" + screen);
             con = (HttpURLConnection) url.openConnection();
@@ -310,8 +310,8 @@ public class GameClient extends Application {
 
                 }
 
-                if (jsonObject.containsKey("maptimestamp")) {
-                    maptimestamp = Long.parseLong(jsonObject.get("maptimestamp").toString());
+                if (jsonObject.containsKey("mapTimeStamp")) {
+                    maptimestamp = Long.parseLong(jsonObject.get("mapTimeStamp").toString());
                     System.out.println("Recieved: " + maptimestamp);
                 }
 

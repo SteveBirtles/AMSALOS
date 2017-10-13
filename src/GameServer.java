@@ -15,13 +15,13 @@ public class GameServer extends AbstractHandler {
 
     public final static boolean debug = false;
 
-    public final static ArrayList<Entity> worldentities = new ArrayList<>();
+    public final static ArrayList<Entity> worldEntities = new ArrayList<>();
     public final static int MAX_X = 401;
     public final static int MAX_Y = 17;
     public final static int SCREEN_COUNT = 20;
     public final static int SCREEN_WIDTH = 20;
 
-    public long maptimestamp;
+    public long mapTimeStamp;
 
     private int[][] map = null;
     private final String[] encodedMap = new String[SCREEN_COUNT];
@@ -49,8 +49,26 @@ public class GameServer extends AbstractHandler {
             long future = present + 4;
             long past = present - 2;
 
-            synchronized (worldentities) {
-                for (Entity e: worldentities) {
+            int entityMap[][] = new int[MAX_X][MAX_Y];
+
+            synchronized (worldEntities) {
+                for (Entity e: worldEntities) {
+
+                    long last = 0;
+                    for (long l: e.xMap.keySet()) {
+                        if (l > last) last = l;
+                    }
+
+                    if (future != last && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
+                        int currentX = e.xMap.get(last);
+                        int currentY = e.yMap.get(last);
+                        if (currentX >= 0 && currentY >= 0 && currentX < MAX_X && currentY < MAX_Y) {
+                            entityMap[currentX][currentY] = e.getId();
+                        }
+                    }
+
+                }
+                for (Entity e: worldEntities) {
 
                     long first = future;
                     long last = 0;
@@ -94,9 +112,31 @@ public class GameServer extends AbstractHandler {
                                 e.yMap.put(future, newY);
                                 break;
                             case 3:
-                                XY target = Wander.calculateNext(currentX, currentY, e, map, rnd);
+                                int[][] vicinity = new int[Wander.WANDER_SIZE][Wander.WANDER_SIZE];
+
+                                for (int i = 0; i < Wander.WANDER_SIZE; i++) {
+                                    for (int j = 0; j < Wander.WANDER_SIZE; j++) {
+                                        int u = currentX - Wander.WANDER_CENTRE + i;
+                                        int v = currentY - Wander.WANDER_CENTRE + i;
+                                        if (u >= 0 && v >= 0 && u < MAX_X && v < MAX_Y) {
+                                            if (map[u][v] % 256 >= 128) {
+                                                vicinity[i][j] = 1;
+                                            } else if (entityMap[u][v] > 0) {
+                                                vicinity[i][j] = 2;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                XY target = Wander.calculateNext(e, vicinity);
+                                target.x += currentX;
+                                target.y += currentY;
+                                System.out.println(e.getId() + ": " + target.x + ", " + target.y);
                                 e.xMap.put(future, target.x);
                                 e.yMap.put(future, target.y);
+                                if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
+                                    entityMap[target.x][target.y] = e.getId();
+                                }
                                 break;
                         }
 
@@ -156,8 +196,8 @@ public class GameServer extends AbstractHandler {
 
                     if (method.equals("GET")) {
 
-                        if (variable.equals("maptimestamp")) {
-                            if (Long.parseLong(value) != maptimestamp) sendMap = true;
+                        if (variable.equals("mapTimeStamp")) {
+                            if (Long.parseLong(value) != mapTimeStamp) sendMap = true;
                         }
 
                         if (variable.equals("map") && !sendMap) sendMap = value.toLowerCase().equals("true");
@@ -208,8 +248,8 @@ public class GameServer extends AbstractHandler {
             }
             else if (resetAll != -1) {
                 long t = System.currentTimeMillis() >> 8;
-                if (t - maptimestamp > 8) {
-                    worldentities.clear();
+                if (t - mapTimeStamp > 8) {
+                    worldEntities.clear();
                     createMap(resetAll);
                 }
             }
@@ -224,8 +264,8 @@ public class GameServer extends AbstractHandler {
 
                 ArrayList<JSONObject> entities = new ArrayList<>();
 
-                synchronized (worldentities) {
-                    for (Entity e : worldentities) {
+                synchronized (worldEntities) {
+                    for (Entity e : worldEntities) {
                         if (e.xMap.containsKey(t)) {
                             int x = e.xMap.get(t);
                             int y = e.yMap.get(t);
@@ -261,7 +301,7 @@ public class GameServer extends AbstractHandler {
                     finaljson.put("map", encodedMap[position - 1]);
                 }
 
-                finaljson.put("maptimestamp", maptimestamp);
+                finaljson.put("mapTimeStamp", mapTimeStamp);
             }
 
 
@@ -284,9 +324,9 @@ public class GameServer extends AbstractHandler {
 
         Random rnd = new Random(t);
 
-        synchronized (worldentities) {
+        synchronized (worldEntities) {
 
-            int existingEntities = worldentities.size();
+            int existingEntities = worldEntities.size();
 
             for (int i = 1; i <= entityCount; i++) {
 
@@ -312,9 +352,9 @@ public class GameServer extends AbstractHandler {
                 clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
                 clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
 
-                Wander.pickRandomDirection(clearDirections, newE, rnd);
+                Wander.pickRandomDirection(clearDirections, newE);
 
-                worldentities.add(newE);
+                worldEntities.add(newE);
             }
         }
 
@@ -332,17 +372,17 @@ public class GameServer extends AbstractHandler {
 
     public void createMap(int type) {
 
-        maptimestamp = System.currentTimeMillis() >> 8;
+        mapTimeStamp = System.currentTimeMillis() >> 8;
 
         switch (type) {
             case 1:
-                map = Nessy.Gen1.generate(MAX_X, MAX_Y, maptimestamp);
+                map = Nessy.Gen1.generate(MAX_X, MAX_Y, mapTimeStamp);
                 break;
             case 2:
-                map = Nessy.Gen2.generate(MAX_X, MAX_Y, true, maptimestamp);
+                map = Nessy.Gen2.generate(MAX_X, MAX_Y, true, mapTimeStamp);
                 break;
             case 3:
-                map = Lewis.MapGen.makeMap(maptimestamp);
+                map = Lewis.MapGen.makeMap(mapTimeStamp);
                 break;
         }
 
