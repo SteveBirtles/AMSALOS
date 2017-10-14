@@ -11,7 +11,7 @@ public class Wander {
         return count;
     }
 
-    public static void pickRandomDirection(boolean[] clearDirections, Entity entity) {
+    public static void pickRandomDirection(boolean[] clearDirections, ServerEntity entity) {
 
         if (noOfClearDirections(clearDirections) == 0) {
             entity.dx = 0;
@@ -44,7 +44,7 @@ public class Wander {
         }
     }
 
-    public static XY calculateNext(Entity entity, int[][] vicinity) {
+    public static XY calculateNext(ServerEntity entity, int[][] vicinity) {
 
         boolean[] clearDirections = new boolean[4];
         clearDirections[0] = vicinity[WANDER_CENTRE][WANDER_CENTRE - 1] == 0;

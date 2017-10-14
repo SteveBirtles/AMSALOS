@@ -15,11 +15,12 @@ public class GameServer extends AbstractHandler {
 
     public final static boolean debug = false;
 
-    public final static ArrayList<Entity> worldEntities = new ArrayList<>();
+    public final static ArrayList<ServerEntity> worldEntities = new ArrayList<>();
     public final static int MAX_X = 401;
     public final static int MAX_Y = 17;
     public final static int SCREEN_COUNT = 20;
     public final static int SCREEN_WIDTH = 20;
+    public final static int TOMBSTONE_LIFETIME = 40;
 
     public long mapTimeStamp;
 
@@ -31,17 +32,42 @@ public class GameServer extends AbstractHandler {
 
         public void run() {
             Random rnd = new Random();
-            int screen = rnd.nextInt(20) + 1;
+            int screen = 1; //rnd.nextInt(20) + 1;
             int type = rnd.nextInt(12) + 4;
             createEntities(1, screen, type, 3);
         }
     }
 
+    public int[][] generateEntityMap(ArrayList<ServerEntity> worldEntities) {
+
+        int[][] entityMap = new int[MAX_X][MAX_Y];
+
+        for (ClientEntity e: worldEntities) {
+
+            if (e.getHealth() == 0) continue;
+
+            long last = 0;
+            for (long l: e.xMap.keySet()) {
+                if (l > last) last = l;
+            }
+
+            if (e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
+                int currentX = e.xMap.get(last);
+                int currentY = e.yMap.get(last);
+                if (currentX >= 0 && currentY >= 0 && currentX < MAX_X && currentY < MAX_Y) {
+                    entityMap[currentX][currentY] = e.getId();
+                }
+            }
+
+        }
+
+        return entityMap;
+    }
 
     public class EntityUpdater extends TimerTask {
 
         public void run() {
-
+            ArrayList<ServerEntity> expired = new ArrayList<>();
             long present = System.currentTimeMillis() >> 8;
 
             Random rnd = new Random(present);
@@ -49,26 +75,21 @@ public class GameServer extends AbstractHandler {
             long future = present + 4;
             long past = present - 2;
 
-            int entityMap[][] = new int[MAX_X][MAX_Y];
-
             synchronized (worldEntities) {
-                for (Entity e: worldEntities) {
 
-                    long last = 0;
-                    for (long l: e.xMap.keySet()) {
-                        if (l > last) last = l;
-                    }
-
-                    if (future != last && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
-                        int currentX = e.xMap.get(last);
-                        int currentY = e.yMap.get(last);
-                        if (currentX >= 0 && currentY >= 0 && currentX < MAX_X && currentY < MAX_Y) {
-                            entityMap[currentX][currentY] = e.getId();
-                        }
-                    }
-
+                for (ServerEntity e: worldEntities) {
+                    if (e.tombstoneAge > 40) expired.add(e);
                 }
-                for (Entity e: worldEntities) {
+                worldEntities.removeAll(expired);
+
+                int entityMap[][] = generateEntityMap(worldEntities);
+
+                for (ServerEntity e: worldEntities) {
+                    e.calculateAdjacentEnemies(entityMap);
+                    e.changeHealth(-e.adjacentEnemies);
+                }
+
+                for (ServerEntity e: worldEntities) {
 
                     long first = future;
                     long last = 0;
@@ -82,64 +103,81 @@ public class GameServer extends AbstractHandler {
                         int currentX = e.xMap.get(last);
                         int currentY = e.yMap.get(last);
 
-                        switch (e.getAIType()) {
-                            case 0:
-                                e.dx = 0;
-                                e.dy = 0;
-                                e.xMap.put(future, currentX);
-                                e.yMap.put(future, currentY);
-                                break;
-                            case 1:
-                                e.dy = 0;
-                                if (e.dx == 0) e.dx = rnd.nextInt(2) == 0 ? -1 : 1;
-                                int newX = currentX + e.dx;
-                                if (newX < 0 || newX >= MAX_X || map[newX][currentY] % 256 >= 128) {
-                                    newX = currentX;
-                                    e.dx = -e.dx;
-                                }
-                                e.xMap.put(future, newX);
-                                e.yMap.put(future, currentY);
-                                break;
-                            case 2:
-                                e.dx = 0;
-                                if (e.dy == 0) e.dy = rnd.nextInt(2) == 0 ? -1 : 1;
-                                int newY = currentY + e.dy;
-                                if (newY < 0 || newY >= MAX_Y || map[currentX][newY] % 256 >= 128) {
-                                    newY = currentY;
-                                    e.dy = -e.dy;
-                                }
-                                e.xMap.put(future, currentX);
-                                e.yMap.put(future, newY);
-                                break;
-                            case 3:
+                        if (e.adjacentEnemies > 0) {
 
-                                int[][] vicinity = new int[Wander.WANDER_SIZE][Wander.WANDER_SIZE];
+                            e.xMap.put(future, currentX);
+                            e.yMap.put(future, currentY);
 
-                                for (int i = 0; i < Wander.WANDER_SIZE; i++) {
-                                    for (int j = 0; j < Wander.WANDER_SIZE; j++) {
-                                        int u = currentX - Wander.WANDER_CENTRE + i;
-                                        int v = currentY - Wander.WANDER_CENTRE + j;
-                                        if (u >= 0 && v >= 0 && u < MAX_X && v < MAX_Y) {
-                                            if (map[u][v] % 256 >= 128) {
-                                                vicinity[i][j] = 1;
-                                            } else if (entityMap[u][v] > 0 && entityMap[u][v] != e.getId()) {
-                                                vicinity[i][j] = 2;
+                        }
+                        else if (e.getHealth() == 0) {
+
+                            e.tombstoneAge++;
+                            e.xMap.put(future, currentX);
+                            e.yMap.put(future, currentY);
+
+                        } else {
+
+                            switch (e.getAIType()) {
+                                case 0:
+                                    e.dx = 0;
+                                    e.dy = 0;
+                                    e.xMap.put(future, currentX);
+                                    e.yMap.put(future, currentY);
+                                    break;
+                                case 1:
+                                    e.dy = 0;
+                                    if (e.dx == 0) e.dx = rnd.nextInt(2) == 0 ? -1 : 1;
+                                    int newX = currentX + e.dx;
+                                    if (newX < 0 || newX >= MAX_X || map[newX][currentY] % 256 >= 128
+                                            || (entityMap[newX][currentY] > 0 && entityMap[newX][currentY] != e.getId())) {
+                                        newX = currentX;
+                                        e.dx = -e.dx;
+                                    }
+                                    e.xMap.put(future, newX);
+                                    e.yMap.put(future, currentY);
+                                    break;
+                                case 2:
+                                    e.dx = 0;
+                                    if (e.dy == 0) e.dy = rnd.nextInt(2) == 0 ? -1 : 1;
+                                    int newY = currentY + e.dy;
+                                    if (newY < 0 || newY >= MAX_Y || map[currentX][newY] % 256 >= 128
+                                            || (entityMap[currentX][newY] > 0 && entityMap[currentX][newY] != e.getId())) {
+                                        newY = currentY;
+                                        e.dy = -e.dy;
+                                    }
+                                    e.xMap.put(future, currentX);
+                                    e.yMap.put(future, newY);
+                                    break;
+                                case 3:
+
+                                    int[][] vicinity = new int[Wander.WANDER_SIZE][Wander.WANDER_SIZE];
+
+                                    for (int i = 0; i < Wander.WANDER_SIZE; i++) {
+                                        for (int j = 0; j < Wander.WANDER_SIZE; j++) {
+                                            int u = currentX - Wander.WANDER_CENTRE + i;
+                                            int v = currentY - Wander.WANDER_CENTRE + j;
+                                            if (u >= 0 && v >= 0 && u < MAX_X && v < MAX_Y) {
+                                                if (map[u][v] % 256 >= 128) {
+                                                    vicinity[i][j] = 1;
+                                                } else if (entityMap[u][v] > 0 && entityMap[u][v] != e.getId()) {
+                                                    vicinity[i][j] = 2;
+                                                }
                                             }
                                         }
                                     }
-                                }
 
-                                XY target = Wander.calculateNext(e, vicinity);
-                                target.x += currentX;
-                                target.y += currentY;
-                                e.xMap.put(future, target.x);
-                                e.yMap.put(future, target.y);
-                                if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
-                                    entityMap[target.x][target.y] = e.getId();
-                                }
-                                break;
+                                    XY target = Wander.calculateNext(e, vicinity);
+                                    target.x += currentX;
+                                    target.y += currentY;
+                                    e.xMap.put(future, target.x);
+                                    e.yMap.put(future, target.y);
+                                    if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
+                                        entityMap[target.x][target.y] = e.getId();
+                                    }
+                                    break;
+                            }
+
                         }
-
                     }
 
                     if (first <= past && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
@@ -265,7 +303,7 @@ public class GameServer extends AbstractHandler {
                 ArrayList<JSONObject> entities = new ArrayList<>();
 
                 synchronized (worldEntities) {
-                    for (Entity e : worldEntities) {
+                    for (ServerEntity e : worldEntities) {
                         if (e.xMap.containsKey(t)) {
                             int x = e.xMap.get(t);
                             int y = e.yMap.get(t);
@@ -273,6 +311,12 @@ public class GameServer extends AbstractHandler {
                                 JSONObject entity = new JSONObject();
                                 entity.put("id", e.getId());
                                 entity.put("type", e.getType());
+                                if (e.getHealth() > 0) {
+                                    entity.put("health", e.getHealth());
+                                }
+                                else {
+                                    entity.put("health", (double) (-e.tombstoneAge) / (TOMBSTONE_LIFETIME) );
+                                }
                                 entity.put("x", x);
                                 entity.put("y", y);
                                 entities.add(entity);
@@ -326,22 +370,23 @@ public class GameServer extends AbstractHandler {
 
         synchronized (worldEntities) {
 
-            int existingEntities = worldEntities.size();
+            int entityMap[][] = generateEntityMap(worldEntities);
 
             for (int i = 1; i <= entityCount; i++) {
 
-                Entity newE = new Entity(existingEntities + i, type);
+                ServerEntity newE = new ServerEntity( type, 10);
                 newE.setAiType(aiType);
 
-                int x, y;
+                int x, y, attempts = 0;
                 do {
+                    attempts++;
                     if (screenNo == 0) {
                         x = rnd.nextInt(MAX_X);
                     } else {
                         x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
                     }
                     y = rnd.nextInt(MAX_Y);
-                } while (map[x][y]%256 > 127);
+                } while (map[x][y]%256 > 127 && entityMap[x][y] == 0 && attempts < 100);
 
                 newE.xMap.put(t, x);
                 newE.yMap.put(t, y);

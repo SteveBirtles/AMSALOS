@@ -7,6 +7,8 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -39,7 +41,7 @@ public class GameClient extends Application {
     public static int failCount = 0;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
-    static final ArrayList<Entity> currentEntities = new ArrayList<>();
+    static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
     static int viewportPosition = 0;
 
     public static String serverAddress = "localhost";
@@ -179,37 +181,58 @@ public class GameClient extends Application {
                 long time = System.currentTimeMillis() >> 8;
                 double offset = (System.currentTimeMillis() % 256) / 256.0;
 
+                ColorAdjust dead = new ColorAdjust();
+                dead.setSaturation(-1.0);
+                dead.setBrightness(-0.5);
+
                 synchronized (currentEntities) {
-                    for (Entity e : currentEntities) {
 
-                        int x0 = -1;
-                        int y0 = -1;
-                        int x1 = -1;
-                        int y1 = -1;
+                    for (int alive = 0; alive <= 1; alive++) {
 
-                        for (long t: e.xMap.keySet()) {
-                            if (t == time) {
-                                x0 = e.xMap.get(t);
-                                y0 = e.yMap.get(t);
+                        for (ClientEntity e : currentEntities) {
+
+                            if ((alive == 0 && e.getHealth() > 0) || (alive == 1 && e.getHealth() <= 0)) continue;
+
+                            int x0 = -1;
+                            int y0 = -1;
+                            int x1 = -1;
+                            int y1 = -1;
+
+                            for (long t : e.xMap.keySet()) {
+                                if (t == time) {
+                                    x0 = e.xMap.get(t);
+                                    y0 = e.yMap.get(t);
+                                } else if (t == time + 1) {
+                                    x1 = e.xMap.get(t);
+                                    y1 = e.yMap.get(t);
+                                }
                             }
-                            else if (t == time + 1) {
-                                x1 = e.xMap.get(t);
-                                y1 = e.yMap.get(t);
+
+                            if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
+                                int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
+                                int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
+                                int column = (e.getType() - 1) % 16;
+                                int row = (e.getType() - 1) / 16;
+
+                                if (alive == 1) {
+                                    gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
+                                    gc.setFill(Color.rgb(0, 255, 0, 0.5));
+                                    gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.getHealth(), 10);
+                                    gc.setFill(Color.rgb(255, 0, 0, 0.5));
+                                    gc.fillRect(x - viewportPosition * WINDOW_WIDTH + 64 * e.getHealth(), y - 20, 64 * (1 - e.getHealth()), 10);
+                                }
+                                else {
+                                    gc.setEffect(dead);
+                                    double alpha = 1 + e.getHealth();
+                                    if (alpha < 0) alpha = 0;
+                                    gc.setGlobalAlpha(alpha);
+                                    gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
+                                    gc.setEffect(null);
+                                    gc.setGlobalAlpha(1.0);
+                                }
                             }
-                        }
-
-                        if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
-                            int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
-                            int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
-                            int column = (e.getType() - 1) % 16;
-                            int row = (e.getType() - 1) / 16;
-                            gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
-
-                            gc.setFill(Color.rgb(0,255,0));
-                            gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64, 10);
 
                         }
-
                     }
                 }
 
@@ -254,7 +277,7 @@ public class GameClient extends Application {
     public static void getUpdate() {
 
         long clientTime = System.currentTimeMillis() >> 8;
-        HashMap<Integer, Entity> entities = new HashMap<>();
+        HashMap<Integer, ClientEntity> entities = new HashMap<>();
 
         URL url;
         HttpURLConnection con;
@@ -321,7 +344,7 @@ public class GameClient extends Application {
                     for (Object frameObject : frameArray) {
                         JSONObject frame = (JSONObject) frameObject;
 
-                        long time = -1;
+                        long time;
 
                         if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
 
@@ -336,6 +359,7 @@ public class GameClient extends Application {
                                 if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
                                     int id = Integer.parseInt(entity.get("id").toString());
                                     int type = Integer.parseInt(entity.get("type").toString());
+                                    double health = Double.parseDouble(entity.get("health").toString());
                                     int x = Integer.parseInt(entity.get("x").toString());
                                     int y = Integer.parseInt(entity.get("y").toString());
 
@@ -343,13 +367,13 @@ public class GameClient extends Application {
                                         entities.get(id).xMap.put(time, x);
                                         entities.get(id).yMap.put(time, y);
                                     } else {
-                                        Entity newE = new Entity(id, type);
+                                        ClientEntity newE = new ClientEntity(id, type, health);
                                         newE.xMap.put(time, x);
                                         newE.yMap.put(time, y);
                                         entities.put(id, newE);
                                     }
                                 } else {
-                                    System.out.println("Entity keys are wrong!");
+                                    System.out.println("ClientEntity keys are wrong!");
                                 }
                             }
                         }
@@ -358,7 +382,7 @@ public class GameClient extends Application {
 
                 synchronized (currentEntities) {
                     currentEntities.clear();
-                    for (Entity e : entities.values()) {
+                    for (ClientEntity e : entities.values()) {
                         currentEntities.add(e);
                     }
                 }

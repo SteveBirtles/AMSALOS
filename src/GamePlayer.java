@@ -50,7 +50,7 @@ public class GamePlayer extends Application {
     public static int failCount = 0;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
-    static final ArrayList<Entity> currentEntities = new ArrayList<>();
+    static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
     //static int viewportPosition = 0;
 
     public static String serverAddress = "localhost";
@@ -242,7 +242,7 @@ public class GamePlayer extends Application {
                 double offset = (System.currentTimeMillis() % 256) / 256.0;
 
                 synchronized (currentEntities) {
-                    for (Entity e : currentEntities) {
+                    for (ClientEntity e : currentEntities) {
 
                         int x0 = -1;
                         int y0 = -1;
@@ -312,7 +312,7 @@ public class GamePlayer extends Application {
     public static void getUpdate() {
 
         long clientTime = System.currentTimeMillis() >> 8;
-        HashMap<Integer, Entity> entities = new HashMap<>();
+        HashMap<Integer, ClientEntity> entities = new HashMap<>();
 
         URL url;
         HttpURLConnection con;
@@ -392,6 +392,7 @@ public class GamePlayer extends Application {
                                 if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
                                     int id = Integer.parseInt(entity.get("id").toString());
                                     int type = Integer.parseInt(entity.get("type").toString());
+                                    double health = Double.parseDouble(entity.get("health").toString());
                                     int x = Integer.parseInt(entity.get("x").toString());
                                     int y = Integer.parseInt(entity.get("y").toString());
 
@@ -399,13 +400,13 @@ public class GamePlayer extends Application {
                                         entities.get(id).xMap.put(time, x);
                                         entities.get(id).yMap.put(time, y);
                                     } else {
-                                        Entity newE = new Entity(id, type);
+                                        ClientEntity newE = new ClientEntity(id, type, health);
                                         newE.xMap.put(time, x);
                                         newE.yMap.put(time, y);
                                         entities.put(id, newE);
                                     }
                                 } else {
-                                    System.out.println("Entity keys are wrong!");
+                                    System.out.println("ClientEntity keys are wrong!");
                                 }
                             }
                         }
@@ -414,7 +415,7 @@ public class GamePlayer extends Application {
 
                 synchronized (currentEntities) {
                     currentEntities.clear();
-                    for (Entity e : entities.values()) {
+                    for (ClientEntity e : entities.values()) {
                         currentEntities.add(e);
                     }
                 }
