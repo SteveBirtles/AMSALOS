@@ -7,6 +7,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.effect.Bloom;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
@@ -185,6 +186,9 @@ public class GameClient extends Application {
                 dead.setSaturation(-1.0);
                 dead.setBrightness(-0.5);
 
+                Bloom attacking = new Bloom();
+                attacking.setThreshold(0.0);
+
                 synchronized (currentEntities) {
 
                     for (int alive = 0; alive <= 1; alive++) {
@@ -215,6 +219,7 @@ public class GameClient extends Application {
                                 int row = (e.getType() - 1) / 16;
 
                                 if (alive == 1) {
+                                    if (e.getAdjacentEnemies() > 0) gc.setEffect(attacking);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
                                     gc.setFill(Color.rgb(0, 255, 0, 0.5));
                                     gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.getHealth(), 10);
@@ -227,9 +232,9 @@ public class GameClient extends Application {
                                     if (alpha < 0) alpha = 0;
                                     gc.setGlobalAlpha(alpha);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
-                                    gc.setEffect(null);
                                     gc.setGlobalAlpha(1.0);
                                 }
+                                gc.setEffect(null);
                             }
 
                         }
@@ -356,25 +361,23 @@ public class GameClient extends Application {
 
                             for (Object entityObject : entityArray) {
                                 JSONObject entity = (JSONObject) entityObject;
-                                if (entity.containsKey("id") && entity.containsKey("x") && entity.containsKey("y")) {
-                                    int id = Integer.parseInt(entity.get("id").toString());
-                                    int type = Integer.parseInt(entity.get("type").toString());
-                                    double health = Double.parseDouble(entity.get("health").toString());
-                                    int x = Integer.parseInt(entity.get("x").toString());
-                                    int y = Integer.parseInt(entity.get("y").toString());
+                                int id = Integer.parseInt(entity.get("i").toString());
+                                int type = Integer.parseInt(entity.get("t").toString());
+                                double health = Double.parseDouble(entity.get("h").toString());
+                                int adjacentEnemies = Integer.parseInt(entity.get("a").toString());
+                                int x = Integer.parseInt(entity.get("x").toString());
+                                int y = Integer.parseInt(entity.get("y").toString());
 
-                                    if (entities.containsKey(id)) {
-                                        entities.get(id).xMap.put(time, x);
-                                        entities.get(id).yMap.put(time, y);
-                                    } else {
-                                        ClientEntity newE = new ClientEntity(id, type, health);
-                                        newE.xMap.put(time, x);
-                                        newE.yMap.put(time, y);
-                                        entities.put(id, newE);
-                                    }
+                                if (entities.containsKey(id)) {
+                                    entities.get(id).xMap.put(time, x);
+                                    entities.get(id).yMap.put(time, y);
                                 } else {
-                                    System.out.println("ClientEntity keys are wrong!");
+                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentEnemies);
+                                    newE.xMap.put(time, x);
+                                    newE.yMap.put(time, y);
+                                    entities.put(id, newE);
                                 }
+
                             }
                         }
                     }

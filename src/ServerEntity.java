@@ -11,11 +11,10 @@ public class ServerEntity extends ClientEntity {
 
     public int dx;
     public int dy;
-    public int adjacentEnemies;
     public int tombstoneAge;
 
     public ServerEntity(int type, double healthScale) {
-        super(nextID, type, 1);
+        super(nextID, type, 1, 0);
         nextID++;
         this.aiType = 0;
         this.randomiser = new Random(id);

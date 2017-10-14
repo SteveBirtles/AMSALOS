@@ -309,14 +309,15 @@ public class GameServer extends AbstractHandler {
                             int y = e.yMap.get(t);
                             if (isPlayer || (x >= (position-1)*SCREEN_WIDTH - 2 && x <= position*SCREEN_WIDTH + 2)) {
                                 JSONObject entity = new JSONObject();
-                                entity.put("id", e.getId());
-                                entity.put("type", e.getType());
+                                entity.put("i", e.getId());
+                                entity.put("t", e.getType());
                                 if (e.getHealth() > 0) {
-                                    entity.put("health", e.getHealth());
+                                    entity.put("h", e.getHealth());
                                 }
                                 else {
-                                    entity.put("health", (double) (-e.tombstoneAge) / (TOMBSTONE_LIFETIME) );
+                                    entity.put("h", (double) (-e.tombstoneAge) / (TOMBSTONE_LIFETIME) );
                                 }
+                                entity.put("a", e.getAdjacentEnemies());
                                 entity.put("x", x);
                                 entity.put("y", y);
                                 entities.add(entity);
