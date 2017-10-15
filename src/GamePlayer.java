@@ -404,12 +404,13 @@ public class GamePlayer extends Application {
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
                                 boolean foe = Boolean.parseBoolean(entity.get("f").toString());
+                                int target = Integer.parseInt(entity.get("z").toString());
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
                                     entities.get(id).yMap.put(time, y);
                                 } else {
-                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe);
+                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
                                     entities.put(id, newE);

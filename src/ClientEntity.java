@@ -8,10 +8,11 @@ public class ClientEntity {
     protected int adjacentAttackers;
     protected boolean foe;
 
+    public int targetEntity;
     public HashMap<Long, Integer> xMap;
     public HashMap<Long, Integer> yMap;
 
-    public ClientEntity(int id, int type, double health, int adjacentAttackers, boolean foe) {
+    public ClientEntity(int id, int type, double health, int adjacentAttackers, boolean foe, int target) {
         this.id = id;
         this.type = type;
         this.health = health;
@@ -19,6 +20,7 @@ public class ClientEntity {
         this.xMap = new HashMap<>();
         this.yMap = new HashMap<>();
         this.foe = foe;
+        this.targetEntity = target;
     }
 
     public int getId() {

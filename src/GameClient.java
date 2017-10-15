@@ -44,7 +44,7 @@ public class GameClient extends Application {
     static int viewportPosition = 0;
 
     public static String serverAddress = "localhost";
-    public static boolean fullscreen = true;
+    public static boolean fullscreen = false;
 
     public static int[][] map = null;
 
@@ -222,6 +222,41 @@ public class GameClient extends Application {
                                     gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.getHealth(), 10);
                                     gc.setFill(Color.rgb(255, 0, 0, 0.5));
                                     gc.fillRect(x - viewportPosition * WINDOW_WIDTH + 64 * e.getHealth(), y - 20, 64 * (1 - e.getHealth()), 10);
+
+                                    if (e.targetEntity != 0) {
+                                        for (ClientEntity et : currentEntities) {
+                                            if (et.getId() == e.targetEntity) {
+
+                                                int x0b = -1;
+                                                int y0b = -1;
+                                                int x1b = -1;
+                                                int y1b = -1;
+
+                                                for (long t : et.xMap.keySet()) {
+                                                    if (t == time) {
+                                                        x0b = et.xMap.get(t);
+                                                        y0b = et.yMap.get(t);
+                                                    } else if (t == time + 1) {
+                                                        x1b = et.xMap.get(t);
+                                                        y1b = et.yMap.get(t);
+                                                    }
+                                                }
+
+                                                if (x0b != -1 && y0b != -1 && x1b != -1 && y1b != -1) {
+
+                                                    int xb = (int) (64.0 * (x0b + offset * (x1b - x0b))) - viewportPosition * WINDOW_WIDTH;
+                                                    int yb = (int) (64.0 * (y0b + offset * (y1b - y0b)));
+
+                                                    gc.setStroke(Color.RED);
+                                                    gc.setLineWidth(5);
+                                                    gc.strokeLine(x + 32 - viewportPosition * WINDOW_WIDTH, y + 32, xb, yb);
+
+                                                }
+
+                                            }
+                                        }
+                                    }
+
                                 }
                                 else {
                                     gc.setEffect(dead);
@@ -365,12 +400,13 @@ public class GameClient extends Application {
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
                                 boolean foe = Boolean.parseBoolean(entity.get("f").toString());
+                                int target = Integer.parseInt(entity.get("z").toString());
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
                                     entities.get(id).yMap.put(time, y);
                                 } else {
-                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe);
+                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
                                     entities.put(id, newE);

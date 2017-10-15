@@ -1,5 +1,3 @@
-import org.eclipse.jetty.server.Server;
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -19,7 +17,7 @@ public class ServerEntity extends ClientEntity {
     public int adjacentFoes;
 
     public ServerEntity(int type, double healthScale, boolean foe) {
-        super(nextID, type, 1, 0, foe);
+        super(nextID, type, 1, 0, foe, 0);
         nextID++;
         this.aiType = 0;
         this.rnd = new Random(id);
@@ -48,7 +46,10 @@ public class ServerEntity extends ClientEntity {
                     if (map[u][v] % 256 >= 128) {
                         vicinity[i][j] = 1;
                     } else if (entityMap[u][v] != 0 && entityMap[u][v] != getId()) {
-                        if (entityMap[u][v] > 0) {
+                        if (targetEntity != 0 && Math.abs(entityMap[u][v]) == targetEntity) {
+                            vicinity[i][j] = 4;
+                        }
+                        else if (entityMap[u][v] > 0) {
                             vicinity[i][j] = 2;
                         }
                         else {

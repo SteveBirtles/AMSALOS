@@ -34,7 +34,7 @@ public class GameServer extends AbstractHandler {
 
         public void run() {
             Random rnd = new Random();
-            int screen = 1; //rnd.nextInt(20) + 1;
+            int screen = rnd.nextInt(20) + 1;
             int type = rnd.nextInt(16) + 1;
             createEntities(1, screen, type, type <= 4 ? 4 : 3);
         }
@@ -55,6 +55,16 @@ public class GameServer extends AbstractHandler {
 
                 for (ServerEntity e: worldEntities) {
                     if (e.tombstoneAge > 40) expired.add(e);
+                    if (e.targetEntity > 0) {
+                        for (ServerEntity e2: worldEntities) {
+                            if (e2.getId() == e.targetEntity) {
+                                if (e2.health <= 0) {
+                                    e.targetEntity = 0;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
                 worldEntities.removeAll(expired);
 
@@ -95,7 +105,7 @@ public class GameServer extends AbstractHandler {
                         } else {
 
                             int[][] vicinity = null;
-                            XY target = null;
+                            XY target;
                             if (e.getAIType() > 2) {
                                 vicinity = e.calculateVicinity(currentX, currentY, map, entityMap);
                             }
@@ -146,7 +156,7 @@ public class GameServer extends AbstractHandler {
 
                                 case 4:
 
-                                    target = Seeker.calculateNext(e, vicinity);
+                                    target = Seeker.calculateNext(e, vicinity, entityMap, currentX, currentY);
 
                                     target.x += currentX;
                                     target.y += currentY;
@@ -302,6 +312,7 @@ public class GameServer extends AbstractHandler {
                                 entity.put("x", x);
                                 entity.put("y", y);
                                 entity.put("f", Boolean.toString(e.getFoe()));
+                                entity.put("z", Math.abs(e.targetEntity));
                                 entities.add(entity);
                             }
                         }
