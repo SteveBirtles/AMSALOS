@@ -7,9 +7,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.effect.Bloom;
-import javafx.scene.effect.ColorAdjust;
-import javafx.scene.effect.Effect;
+import javafx.scene.effect.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -186,8 +184,7 @@ public class GameClient extends Application {
                 dead.setSaturation(-1.0);
                 dead.setBrightness(-0.5);
 
-                Bloom attacking = new Bloom();
-                attacking.setThreshold(0.0);
+                DropShadow friendly = new DropShadow(20, Color.BLACK);
 
                 synchronized (currentEntities) {
 
@@ -219,7 +216,7 @@ public class GameClient extends Application {
                                 int row = (e.getType() - 1) / 16;
 
                                 if (alive == 1) {
-                                    if (e.getAdjacentEnemies() > 0) gc.setEffect(attacking);
+                                    if (!e.foe) gc.setEffect(friendly);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
                                     gc.setFill(Color.rgb(0, 255, 0, 0.5));
                                     gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.getHealth(), 10);
@@ -364,15 +361,16 @@ public class GameClient extends Application {
                                 int id = Integer.parseInt(entity.get("i").toString());
                                 int type = Integer.parseInt(entity.get("t").toString());
                                 double health = Double.parseDouble(entity.get("h").toString());
-                                int adjacentEnemies = Integer.parseInt(entity.get("a").toString());
+                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
+                                boolean foe = Boolean.parseBoolean(entity.get("f").toString());
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
                                     entities.get(id).yMap.put(time, y);
                                 } else {
-                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentEnemies);
+                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
                                     entities.put(id, newE);

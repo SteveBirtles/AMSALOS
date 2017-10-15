@@ -266,7 +266,7 @@ public class GamePlayer extends Application {
                             int x = (int) (4.0 * (x0 + offset * (x1 - x0)));
                             int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
 
-                            if (e.getAdjacentEnemies() > 0) {
+                            if (e.getAdjacentAttackers() > 0) {
                                 gc.setFill(Color.RED);
                             }
                             else {
@@ -400,15 +400,16 @@ public class GamePlayer extends Application {
                                 int id = Integer.parseInt(entity.get("i").toString());
                                 int type = Integer.parseInt(entity.get("t").toString());
                                 double health = Double.parseDouble(entity.get("h").toString());
-                                int adjacentEnemies = Integer.parseInt(entity.get("a").toString());
+                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
+                                boolean foe = Boolean.parseBoolean(entity.get("f").toString());
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
                                     entities.get(id).yMap.put(time, y);
                                 } else {
-                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentEnemies);
+                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
                                     entities.put(id, newE);

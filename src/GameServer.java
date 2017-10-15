@@ -21,6 +21,8 @@ public class GameServer extends AbstractHandler {
     public final static int SCREEN_COUNT = 20;
     public final static int SCREEN_WIDTH = 20;
     public final static int TOMBSTONE_LIFETIME = 40;
+    public final static int VICINITY_SIZE = 17;
+    public final static int VICINITY_CENTRE = 8;
 
     public long mapTimeStamp;
 
@@ -33,35 +35,9 @@ public class GameServer extends AbstractHandler {
         public void run() {
             Random rnd = new Random();
             int screen = 1; //rnd.nextInt(20) + 1;
-            int type = rnd.nextInt(12) + 4;
-            createEntities(1, screen, type, 3);
+            int type = rnd.nextInt(16) + 1;
+            createEntities(1, screen, type, type <= 4 ? 4 : 3);
         }
-    }
-
-    public int[][] generateEntityMap(ArrayList<ServerEntity> worldEntities) {
-
-        int[][] entityMap = new int[MAX_X][MAX_Y];
-
-        for (ClientEntity e: worldEntities) {
-
-            if (e.getHealth() == 0) continue;
-
-            long last = 0;
-            for (long l: e.xMap.keySet()) {
-                if (l > last) last = l;
-            }
-
-            if (e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
-                int currentX = e.xMap.get(last);
-                int currentY = e.yMap.get(last);
-                if (currentX >= 0 && currentY >= 0 && currentX < MAX_X && currentY < MAX_Y) {
-                    entityMap[currentX][currentY] = e.getId();
-                }
-            }
-
-        }
-
-        return entityMap;
     }
 
     public class EntityUpdater extends TimerTask {
@@ -82,11 +58,12 @@ public class GameServer extends AbstractHandler {
                 }
                 worldEntities.removeAll(expired);
 
-                int entityMap[][] = generateEntityMap(worldEntities);
+                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities);
 
                 for (ServerEntity e: worldEntities) {
-                    e.calculateAdjacentEnemies(entityMap);
-                    e.changeHealth(-e.adjacentEnemies);
+                    e.calculateAdjacentEntities(entityMap);
+
+                    e.changeHealth(-e.getAdjacentAttackers());
                 }
 
                 for (ServerEntity e: worldEntities) {
@@ -103,7 +80,7 @@ public class GameServer extends AbstractHandler {
                         int currentX = e.xMap.get(last);
                         int currentY = e.yMap.get(last);
 
-                        if (e.adjacentEnemies > 0) {
+                        if (e.adjacentAttackers > 0) {
 
                             e.xMap.put(future, currentX);
                             e.yMap.put(future, currentY);
@@ -117,6 +94,12 @@ public class GameServer extends AbstractHandler {
 
                         } else {
 
+                            int[][] vicinity = null;
+                            XY target = null;
+                            if (e.getAIType() > 2) {
+                                vicinity = e.calculateVicinity(currentX, currentY, map, entityMap);
+                            }
+
                             switch (e.getAIType()) {
                                 case 0:
                                     e.dx = 0;
@@ -129,7 +112,7 @@ public class GameServer extends AbstractHandler {
                                     if (e.dx == 0) e.dx = rnd.nextInt(2) == 0 ? -1 : 1;
                                     int newX = currentX + e.dx;
                                     if (newX < 0 || newX >= MAX_X || map[newX][currentY] % 256 >= 128
-                                            || (entityMap[newX][currentY] > 0 && entityMap[newX][currentY] != e.getId())) {
+                                            || (entityMap[newX][currentY] != 0 && entityMap[newX][currentY] != e.getId())) {
                                         newX = currentX;
                                         e.dx = -e.dx;
                                     }
@@ -141,7 +124,7 @@ public class GameServer extends AbstractHandler {
                                     if (e.dy == 0) e.dy = rnd.nextInt(2) == 0 ? -1 : 1;
                                     int newY = currentY + e.dy;
                                     if (newY < 0 || newY >= MAX_Y || map[currentX][newY] % 256 >= 128
-                                            || (entityMap[currentX][newY] > 0 && entityMap[currentX][newY] != e.getId())) {
+                                            || (entityMap[currentX][newY] != 0 && entityMap[currentX][newY] != e.getId())) {
                                         newY = currentY;
                                         e.dy = -e.dy;
                                     }
@@ -150,23 +133,21 @@ public class GameServer extends AbstractHandler {
                                     break;
                                 case 3:
 
-                                    int[][] vicinity = new int[Wander.WANDER_SIZE][Wander.WANDER_SIZE];
+                                    target = Wanderer.calculateNext(e, vicinity);
 
-                                    for (int i = 0; i < Wander.WANDER_SIZE; i++) {
-                                        for (int j = 0; j < Wander.WANDER_SIZE; j++) {
-                                            int u = currentX - Wander.WANDER_CENTRE + i;
-                                            int v = currentY - Wander.WANDER_CENTRE + j;
-                                            if (u >= 0 && v >= 0 && u < MAX_X && v < MAX_Y) {
-                                                if (map[u][v] % 256 >= 128) {
-                                                    vicinity[i][j] = 1;
-                                                } else if (entityMap[u][v] > 0 && entityMap[u][v] != e.getId()) {
-                                                    vicinity[i][j] = 2;
-                                                }
-                                            }
-                                        }
+                                    target.x += currentX;
+                                    target.y += currentY;
+                                    e.xMap.put(future, target.x);
+                                    e.yMap.put(future, target.y);
+                                    if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
+                                        entityMap[target.x][target.y] = e.getId();
                                     }
+                                    break;
 
-                                    XY target = Wander.calculateNext(e, vicinity);
+                                case 4:
+
+                                    target = Seeker.calculateNext(e, vicinity);
+
                                     target.x += currentX;
                                     target.y += currentY;
                                     e.xMap.put(future, target.x);
@@ -317,9 +298,10 @@ public class GameServer extends AbstractHandler {
                                 else {
                                     entity.put("h", (double) (-e.tombstoneAge) / (TOMBSTONE_LIFETIME) );
                                 }
-                                entity.put("a", e.getAdjacentEnemies());
+                                entity.put("a", e.adjacentAttackers);
                                 entity.put("x", x);
                                 entity.put("y", y);
+                                entity.put("f", Boolean.toString(e.getFoe()));
                                 entities.add(entity);
                             }
                         }
@@ -371,11 +353,13 @@ public class GameServer extends AbstractHandler {
 
         synchronized (worldEntities) {
 
-            int entityMap[][] = generateEntityMap(worldEntities);
+            int entityMap[][] = ServerEntity.generateEntityMap(worldEntities);
 
             for (int i = 1; i <= entityCount; i++) {
 
-                ServerEntity newE = new ServerEntity( type, 10);
+                boolean foe = type > 4;
+
+                ServerEntity newE = new ServerEntity(type, foe ? 10 : 250, foe);
                 newE.setAiType(aiType);
 
                 int x, y, attempts = 0;
@@ -398,7 +382,7 @@ public class GameServer extends AbstractHandler {
                 clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
                 clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
 
-                Wander.pickRandomDirection(clearDirections, newE);
+                Wanderer.pickRandomDirection(clearDirections, newE);
 
                 worldEntities.add(newE);
             }
