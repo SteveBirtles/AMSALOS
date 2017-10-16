@@ -26,6 +26,35 @@ public class ServerEntity extends ClientEntity {
         this.dy = 0;
     }
 
+    public void pickNextTarget(int[][] vicinity, int[][] entityMap, int currentX, int currentY) {
+
+        double bestDistance = GameServer.VICINITY_SIZE;
+        int endX = 0;
+        int endY = 0;
+
+        for (int i = 0; i < GameServer.VICINITY_SIZE; i++) {
+            for (int j = 0; j < GameServer.VICINITY_SIZE; j++) {
+                if (i == GameServer.VICINITY_CENTRE && j == GameServer.VICINITY_CENTRE) continue;
+                if (vicinity[i][j] == 3) {
+                    double distance = Math.abs(i - GameServer.VICINITY_CENTRE) + Math.abs(j - GameServer.VICINITY_CENTRE);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        endX = i;
+                        endY = j;
+                    }
+                }
+            }
+        }
+
+        if (bestDistance < GameServer.VICINITY_SIZE) {
+            targetEntity = Math.abs(entityMap[currentX + endX - GameServer.VICINITY_CENTRE][currentY + endY - GameServer.VICINITY_CENTRE]);
+        }
+        else {
+            targetEntity = 0;
+        }
+
+    }
+
     public int getAIType() { return this.aiType; }
     public void setAiType(int aiType) { this.aiType = aiType; }
 
@@ -46,10 +75,7 @@ public class ServerEntity extends ClientEntity {
                     if (map[u][v] % 256 >= 128) {
                         vicinity[i][j] = 1;
                     } else if (entityMap[u][v] != 0 && entityMap[u][v] != getId()) {
-                        if (targetEntity != 0 && Math.abs(entityMap[u][v]) == targetEntity) {
-                            vicinity[i][j] = 4;
-                        }
-                        else if (entityMap[u][v] > 0) {
+                        if (entityMap[u][v] > 0) {
                             vicinity[i][j] = 2;
                         }
                         else {

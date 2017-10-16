@@ -105,7 +105,7 @@ public class GameServer extends AbstractHandler {
                         } else {
 
                             int[][] vicinity = null;
-                            XY target;
+                            XY target = null;
                             if (e.getAIType() > 2) {
                                 vicinity = e.calculateVicinity(currentX, currentY, map, entityMap);
                             }
@@ -142,7 +142,6 @@ public class GameServer extends AbstractHandler {
                                     e.yMap.put(future, newY);
                                     break;
                                 case 3:
-
                                     target = Wanderer.calculateNext(e, vicinity);
 
                                     target.x += currentX;
@@ -150,20 +149,47 @@ public class GameServer extends AbstractHandler {
                                     e.xMap.put(future, target.x);
                                     e.yMap.put(future, target.y);
                                     if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
-                                        entityMap[target.x][target.y] = e.getId();
+                                        entityMap[target.x][target.y] = (e.foe ? -1 : 1) * e.getId();
                                     }
                                     break;
 
                                 case 4:
 
-                                    target = Seeker.calculateNext(e, vicinity, entityMap, currentX, currentY);
+                                    if (e.targetEntity == 0) {
+                                        e.pickNextTarget(vicinity, entityMap, currentX, currentY);
+                                    }
+
+                                    if (e.targetEntity != 0) {
+
+                                        XY targetEntity = null;
+                                        for (int x = 0; x < MAX_X; x++) {
+                                            for (int y = 0; y < MAX_Y; y++) {
+                                                if (Math.abs(entityMap[x][y]) == e.targetEntity) {
+                                                    targetEntity = new XY(x - currentX, y - currentY);
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (targetEntity != null) {
+                                            target = Seeker.calculateNext(e, vicinity, targetEntity.x, targetEntity.y);
+                                        } else {
+                                            e.targetEntity = 0;
+                                        }
+                                    }
+
+                                    if (e.targetEntity == 0) {
+                                        e.dx = 0;
+                                        e.dy = 0;
+                                        target = Wanderer.calculateNext(e, vicinity);
+                                    }
 
                                     target.x += currentX;
                                     target.y += currentY;
                                     e.xMap.put(future, target.x);
                                     e.yMap.put(future, target.y);
                                     if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
-                                        entityMap[target.x][target.y] = e.getId();
+                                        entityMap[target.x][target.y] = (e.foe ? -1 : 1) * e.getId();
                                     }
                                     break;
                             }
@@ -416,6 +442,18 @@ public class GameServer extends AbstractHandler {
         mapTimeStamp = System.currentTimeMillis() >> 8;
 
         switch (type) {
+            case 0:
+                map = new int[MAX_X][MAX_Y];
+                for (int x = 0; x < MAX_X; x++) {
+                    for (int y = 0; y < MAX_Y; y++) {
+                        if (x == 0 || y == 0 || x == MAX_X-1 || y == MAX_Y-1) {
+                            map[x][y] = 128;
+                        } else {
+                            map[x][y] = 0;
+                        }
+                    }
+                }
+                break;
             case 1:
                 map = Nessy.Gen1.generate(MAX_X, MAX_Y, mapTimeStamp);
                 break;

@@ -48,7 +48,6 @@ public class GameClient extends Application {
 
     public static int[][] map = null;
 
-    @SuppressWarnings("Duplicates")
     public static void main(String[] args) {
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
@@ -218,6 +217,8 @@ public class GameClient extends Application {
                                 if (alive == 1) {
                                     if (!e.foe) gc.setEffect(friendly);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
+                                    gc.setEffect(null);
+
                                     gc.setFill(Color.rgb(0, 255, 0, 0.5));
                                     gc.fillRect(x - viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.getHealth(), 10);
                                     gc.setFill(Color.rgb(255, 0, 0, 0.5));
@@ -247,8 +248,8 @@ public class GameClient extends Application {
                                                     int xb = (int) (64.0 * (x0b + offset * (x1b - x0b))) - viewportPosition * WINDOW_WIDTH;
                                                     int yb = (int) (64.0 * (y0b + offset * (y1b - y0b)));
 
-                                                    gc.setStroke(Color.RED);
-                                                    gc.setLineWidth(5);
+                                                    gc.setStroke(Color.rgb(255,0,0,0.5));
+                                                    gc.setLineWidth(3);
                                                     gc.strokeLine(x + 32 - viewportPosition * WINDOW_WIDTH, y + 32, xb, yb);
 
                                                 }
@@ -409,6 +410,7 @@ public class GameClient extends Application {
                                     ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
+
                                     entities.put(id, newE);
                                 }
 
