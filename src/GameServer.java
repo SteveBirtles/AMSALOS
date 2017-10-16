@@ -42,7 +42,7 @@ public class GameServer extends AbstractHandler {
             } else {
                 type = rnd.nextInt(12) + 5;
             }
-            ServerEntity e = createEntity(screen, type, type <= 4 ? 2 : 1);
+            ServerEntity e = createEntity(screen, type, type <= 4 ? 4 : 3);
             if (e != null && !e.foe) {
                 e.setName(QuickNameMaker.next(rnd));
             }
@@ -87,7 +87,7 @@ public class GameServer extends AbstractHandler {
                         e.changeHealth(-e.getAdjacentAttackers());
 
                         if (e.getHealth() <= 0) {
-                            ArrayList<Integer> attackers = e.listAdjacentEntities(entityMap);
+                            ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
                             for (ServerEntity e2: worldEntities) {
                                 if (attackers.contains(e2.getId())) {
                                     e2.addKill();
@@ -106,6 +106,8 @@ public class GameServer extends AbstractHandler {
                         if (l > last) last = l;
                         if (l < first) first = l;
                     }
+
+                    //System.out.println(e.getId() + " : " + (future - last));
 
                     if (future != last && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
 
@@ -148,10 +150,11 @@ public class GameServer extends AbstractHandler {
                                     int newX = currentX + e.dx;
                                     if (newX < 0 || newX >= MAX_X || map[newX][currentY] % 256 >= 128
                                             || (entityMap[newX][currentY] != 0 && entityMap[newX][currentY] != e.getId())) {
-                                        newX = currentX;
                                         e.dx = -e.dx;
+                                        e.xMap.put(future, currentX);
+                                    } else {
+                                        e.xMap.put(future, newX);
                                     }
-                                    e.xMap.put(future, newX);
                                     e.yMap.put(future, currentY);
                                     break;
 
@@ -162,11 +165,12 @@ public class GameServer extends AbstractHandler {
                                     int newY = currentY + e.dy;
                                     if (newY < 0 || newY >= MAX_Y || map[currentX][newY] % 256 >= 128
                                             || (entityMap[currentX][newY] != 0 && entityMap[currentX][newY] != e.getId())) {
-                                        newY = currentY;
                                         e.dy = -e.dy;
+                                        e.xMap.put(future, currentY);
+                                    } else {
+                                        e.yMap.put(future, newY);
                                     }
                                     e.xMap.put(future, currentX);
-                                    e.yMap.put(future, newY);
                                     break;
 
                                 case 3:
@@ -218,7 +222,9 @@ public class GameServer extends AbstractHandler {
                             if (e.getAIType() == 3 || e.getAIType() == 4) {
                                 if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
                                     if (entityMap[target.x][target.y] != 0) {
-                                        System.out.println("Avoiding collision " + e.getId() + " and " + entityMap[target.x][target.y]);
+                                        //System.out.println("Avoiding collision " + e.getId() + " and " + entityMap[target.x][target.y]);
+                                        e.xMap.put(future, currentX);
+                                        e.yMap.put(future, currentY);
                                     } else {
                                         e.xMap.put(future, target.x);
                                         e.yMap.put(future, target.y);
@@ -445,10 +451,10 @@ public class GameServer extends AbstractHandler {
                     x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
                 }
                 y = rnd.nextInt(MAX_Y);
-            } while (map[x][y] % 256 > 127 && entityMap[x][y] == 0 && attempts < 100);
+            } while ((map[x][y] % 256 > 127 || entityMap[x][y] != 0) && attempts < 100);
 
             if (attempts >= 100) {
-                System.out.println("Can't find free space!");
+                //System.out.println("Can't find free space!");
                 return null;
             }
 
