@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 
 public class ServerEntity extends ClientEntity {
 
@@ -154,16 +153,36 @@ public class ServerEntity extends ClientEntity {
 
             if (e.getHealth() == 0) continue;
 
+            ArrayList<Long> times = new ArrayList<>();
+
             long last = 0;
             for (long l: e.xMap.keySet()) {
+                times.add(l);
                 if (l > last) last = l;
             }
+            times.remove(last);
 
             if (e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
                 int currentX = e.xMap.get(last);
                 int currentY = e.yMap.get(last);
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
-                    entityMap[currentX][currentY] = (e.foe ? -1 : 1) * e.getId();
+                    if (entityMap[currentX][currentY] != 0) {
+                        e.xMap.remove(last);
+                        e.xMap.remove(last);
+                        for (int t = times.size()-1; t >= 0; t--) {
+                            long time = times.get(t);
+                            int previousX = e.xMap.get(time);
+                            int previousY = e.yMap.get(time);
+                            if (entityMap[previousX][previousY] == 0) {
+                                e.xMap.put(last, previousX);
+                                e.xMap.put(last, previousY);
+                                entityMap[previousX][previousY] = (e.foe ? -1 : 1) * e.getId();
+                                break;
+                            }
+                        }
+                    } else {
+                        entityMap[currentX][currentY] = (e.foe ? -1 : 1) * e.getId();
+                    }
                 }
             }
 

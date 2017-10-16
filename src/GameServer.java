@@ -36,7 +36,7 @@ public class GameServer extends AbstractHandler {
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
             int type;
-            if (rnd.nextInt(4) == 0) {
+            if (rnd.nextInt(25) == 0) {
                 type = rnd.nextInt(4) + 1;
             } else {
                 type = rnd.nextInt(12) + 5;
@@ -103,7 +103,7 @@ public class GameServer extends AbstractHandler {
                         }
                         else if (e.getHealth() == 0) {
 
-                            e.tombstoneAge++;
+                            if (e.foe) e.tombstoneAge++;
                             e.xMap.put(future, currentX);
                             e.yMap.put(future, currentY);
 
@@ -184,8 +184,6 @@ public class GameServer extends AbstractHandler {
                                     }
 
                                     if (e.targetEntity == 0) {
-                                        e.dx = 0;
-                                        e.dy = 0;
                                         target = Wanderer.calculateNext(e, vicinity);
                                     }
 
