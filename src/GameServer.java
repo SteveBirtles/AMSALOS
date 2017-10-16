@@ -65,7 +65,7 @@ public class GameServer extends AbstractHandler {
 
                 for (ServerEntity e: worldEntities) {
                     if (e.tombstoneAge > 40) expired.add(e);
-                    if (e.targetEntity > 0) {
+                    if (e.targetEntity > 0 && e.getHealth() > 0) {
                         for (ServerEntity e2: worldEntities) {
                             if (e2.getId() == e.targetEntity) {
                                 if (e2.health <= 0) {
