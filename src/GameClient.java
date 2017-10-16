@@ -286,9 +286,9 @@ public class GameClient extends Application {
                                     gc.setTextAlign(TextAlignment.CENTER);
                                     gc.setTextBaseline(VPos.CENTER);
                                     gc.setFont(nameFont);
-                                    gc.fillText(e.getName(), x + 32, y-32);
+                                    gc.fillText(e.getName(), x + 32 - viewportPosition * WINDOW_WIDTH, y-32);
                                     gc.setFont(killFont);
-                                    gc.fillText(e.getKills() + " kills", x + 32, y+64);
+                                    gc.fillText(e.getKills() + " kills", x + 32 - viewportPosition * WINDOW_WIDTH, y+64);
                                 }
 
                                 gc.setEffect(null);
