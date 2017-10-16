@@ -399,12 +399,14 @@ public class GamePlayer extends Application {
                                 JSONObject entity = (JSONObject) entityObject;
                                 int id = Integer.parseInt(entity.get("i").toString());
                                 int type = Integer.parseInt(entity.get("t").toString());
-                                double health = Double.parseDouble(entity.get("h").toString());
-                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
+                                double health = Double.parseDouble(entity.get("h").toString());
+                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 boolean foe = Boolean.parseBoolean(entity.get("f").toString());
                                 int target = Integer.parseInt(entity.get("z").toString());
+                                String name = entity.get("n").toString();
+                                int kills = Integer.parseInt(entity.get("k").toString());
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
@@ -413,6 +415,8 @@ public class GamePlayer extends Application {
                                     ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
+                                    newE.setKills(kills);
+                                    newE.setName(name);
                                     entities.put(id, newE);
                                 }
                             }

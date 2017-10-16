@@ -25,6 +25,8 @@ public class ServerEntity extends ClientEntity {
         this.dy = 0;
     }
 
+    public void addKill() { this.kills++; }
+
     public void pickNextTarget(int[][] vicinity, int[][] entityMap, int currentX, int currentY) {
 
         double bestDistance = GameServer.VICINITY_SIZE;
@@ -167,19 +169,7 @@ public class ServerEntity extends ClientEntity {
                 int currentY = e.yMap.get(last);
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
                     if (entityMap[currentX][currentY] != 0) {
-                        e.xMap.remove(last);
-                        e.xMap.remove(last);
-                        for (int t = times.size()-1; t >= 0; t--) {
-                            long time = times.get(t);
-                            int previousX = e.xMap.get(time);
-                            int previousY = e.yMap.get(time);
-                            if (entityMap[previousX][previousY] == 0) {
-                                e.xMap.put(last, previousX);
-                                e.xMap.put(last, previousY);
-                                entityMap[previousX][previousY] = (e.foe ? -1 : 1) * e.getId();
-                                break;
-                            }
-                        }
+                        System.out.println("Entity collision error @ " + last + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
                     } else {
                         entityMap[currentX][currentY] = (e.foe ? -1 : 1) * e.getId();
                     }

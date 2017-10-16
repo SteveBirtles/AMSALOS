@@ -4,6 +4,7 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -13,6 +14,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
@@ -185,6 +189,9 @@ public class GameClient extends Application {
 
                 DropShadow friendly = new DropShadow(20, Color.BLACK);
 
+                Font nameFont = new Font( "Arial", 24);
+                Font killFont = new Font( "Arial", 16);
+
                 synchronized (currentEntities) {
 
                     for (int alive = 0; alive <= 1; alive++) {
@@ -217,6 +224,7 @@ public class GameClient extends Application {
                                 if (alive == 1) {
                                     if (!e.foe) gc.setEffect(friendly);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
+
                                     gc.setEffect(null);
 
                                     gc.setFill(Color.rgb(0, 255, 0, 0.5));
@@ -267,6 +275,22 @@ public class GameClient extends Application {
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - viewportPosition * WINDOW_WIDTH, y, 64, 64);
                                     gc.setGlobalAlpha(1.0);
                                 }
+
+                                if (!e.foe && !e.getName().equals("")) {
+                                    if (alive == 1) {
+                                        gc.setFill(Color.rgb(255, 255, 255 ));
+                                    } else {
+                                        gc.setFill(Color.rgb(0, 0, 0));
+                                    }
+
+                                    gc.setTextAlign(TextAlignment.CENTER);
+                                    gc.setTextBaseline(VPos.CENTER);
+                                    gc.setFont(nameFont);
+                                    gc.fillText(e.getName(), x + 32, y-32);
+                                    gc.setFont(killFont);
+                                    gc.fillText(e.getKills() + " kills", x + 32, y+64);
+                                }
+
                                 gc.setEffect(null);
                             }
 
@@ -394,14 +418,17 @@ public class GameClient extends Application {
 
                             for (Object entityObject : entityArray) {
                                 JSONObject entity = (JSONObject) entityObject;
+
                                 int id = Integer.parseInt(entity.get("i").toString());
                                 int type = Integer.parseInt(entity.get("t").toString());
-                                double health = Double.parseDouble(entity.get("h").toString());
-                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
+                                double health = Double.parseDouble(entity.get("h").toString());
+                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 boolean foe = Boolean.parseBoolean(entity.get("f").toString());
                                 int target = Integer.parseInt(entity.get("z").toString());
+                                String name = entity.get("n").toString();
+                                int kills = Integer.parseInt(entity.get("k").toString());
 
                                 if (entities.containsKey(id)) {
                                     entities.get(id).xMap.put(time, x);
@@ -410,7 +437,8 @@ public class GameClient extends Application {
                                     ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
                                     newE.xMap.put(time, x);
                                     newE.yMap.put(time, y);
-
+                                    newE.setKills(kills);
+                                    newE.setName(name);
                                     entities.put(id, newE);
                                 }
 

@@ -1,3 +1,4 @@
+import Steve.QuickNameMaker;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -36,13 +37,17 @@ public class GameServer extends AbstractHandler {
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
             int type;
-            if (rnd.nextInt(25) == 0) {
+            if (rnd.nextInt(20) == 0) {
                 type = rnd.nextInt(4) + 1;
             } else {
                 type = rnd.nextInt(12) + 5;
             }
-            createEntities(1, screen, type, type <= 4 ? 4 : 3);
+            ServerEntity e = createEntity(screen, type, type <= 4 ? 4 : 3);
+            if (!e.foe) {
+                e.setName(QuickNameMaker.next(rnd));
+            }
         }
+
     }
 
     public class EntityUpdater extends TimerTask {
@@ -65,6 +70,7 @@ public class GameServer extends AbstractHandler {
                             if (e2.getId() == e.targetEntity) {
                                 if (e2.health <= 0) {
                                     e.targetEntity = 0;
+                                    e.addKill();
                                     break;
                                 }
                             }
@@ -79,6 +85,7 @@ public class GameServer extends AbstractHandler {
                     e.calculateAdjacentEntities(entityMap);
 
                     e.changeHealth(-e.getAdjacentAttackers());
+
                 }
 
                 for (ServerEntity e: worldEntities) {
@@ -302,7 +309,7 @@ public class GameServer extends AbstractHandler {
         if (method.equals("POST")) {
 
             if ( addEntity != -1) {
-                createEntities(1, position, addEntity, aiType);
+                createEntity(position, addEntity, aiType);
             }
             else if (resetAll != -1) {
                 long t = System.currentTimeMillis() >> 8;
@@ -342,6 +349,10 @@ public class GameServer extends AbstractHandler {
                                 entity.put("y", y);
                                 entity.put("f", Boolean.toString(e.getFoe()));
                                 entity.put("z", Math.abs(e.targetEntity));
+
+                                entity.put("n", e.getName());
+                                entity.put("k", e.getKills());
+
                                 entities.add(entity);
                             }
                         }
@@ -385,7 +396,9 @@ public class GameServer extends AbstractHandler {
 
     }
 
-    public void createEntities(int entityCount, int screenNo, int type, int aiType) {
+    public ServerEntity createEntity(int screenNo, int type, int aiType) {
+
+        ServerEntity newE;
 
         long t = System.currentTimeMillis() >> 8;
 
@@ -395,40 +408,39 @@ public class GameServer extends AbstractHandler {
 
             int entityMap[][] = ServerEntity.generateEntityMap(worldEntities);
 
-            for (int i = 1; i <= entityCount; i++) {
+            boolean foe = type > 4;
 
-                boolean foe = type > 4;
+            newE = new ServerEntity(type, foe ? 10 : 250, foe);
+            newE.setAiType(aiType);
 
-                ServerEntity newE = new ServerEntity(type, foe ? 10 : 250, foe);
-                newE.setAiType(aiType);
+            int x, y, attempts = 0;
+            do {
+                attempts++;
+                if (screenNo == 0) {
+                    x = rnd.nextInt(MAX_X);
+                } else {
+                    x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
+                }
+                y = rnd.nextInt(MAX_Y);
+            } while (map[x][y] % 256 > 127 && entityMap[x][y] == 0 && attempts < 100);
 
-                int x, y, attempts = 0;
-                do {
-                    attempts++;
-                    if (screenNo == 0) {
-                        x = rnd.nextInt(MAX_X);
-                    } else {
-                        x = rnd.nextInt(SCREEN_WIDTH) + (screenNo - 1) * SCREEN_WIDTH;
-                    }
-                    y = rnd.nextInt(MAX_Y);
-                } while (map[x][y]%256 > 127 && entityMap[x][y] == 0 && attempts < 100);
+            newE.xMap.put(t, x);
+            newE.yMap.put(t, y);
 
-                newE.xMap.put(t, x);
-                newE.yMap.put(t, y);
+            boolean[] clearDirections = new boolean[4];
+            clearDirections[0] = y > 0 && map[x][y - 1] % 256 < 128;
+            clearDirections[1] = x < MAX_X - 1 && map[x + 1][y] % 256 < 128;
+            clearDirections[2] = y < MAX_Y - 1 && map[x][y + 1] % 256 < 128;
+            clearDirections[3] = x > 0 && map[x - 1][y] % 256 < 128;
 
-                boolean[] clearDirections = new boolean[4];
-                clearDirections[0] = y > 0 && map[x][y-1]%256 < 128;
-                clearDirections[1] = x < MAX_X-1 && map[x+1][y]%256 < 128;
-                clearDirections[2] = y < MAX_Y-1 && map[x][y+1]%256 < 128;
-                clearDirections[3] = x > 0 && map[x-1][y]%256 < 128;
+            Wanderer.pickRandomDirection(clearDirections, newE);
 
-                Wanderer.pickRandomDirection(clearDirections, newE);
-
-                worldEntities.add(newE);
-            }
+            worldEntities.add(newE);
         }
 
+        return newE;
     }
+
 
     public void startTimers() {
 
