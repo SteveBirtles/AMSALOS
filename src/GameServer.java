@@ -42,8 +42,8 @@ public class GameServer extends AbstractHandler {
             } else {
                 type = rnd.nextInt(12) + 5;
             }
-            ServerEntity e = createEntity(screen, type, type <= 4 ? 4 : 3);
-            if (!e.foe) {
+            ServerEntity e = createEntity(screen, type, type <= 4 ? 2 : 1);
+            if (e != null && !e.foe) {
                 e.setName(QuickNameMaker.next(rnd));
             }
         }
@@ -134,12 +134,15 @@ public class GameServer extends AbstractHandler {
 
                             switch (e.getAIType()) {
                                 case 0:
+
                                     e.dx = 0;
                                     e.dy = 0;
                                     e.xMap.put(future, currentX);
                                     e.yMap.put(future, currentY);
                                     break;
+
                                 case 1:
+
                                     e.dy = 0;
                                     if (e.dx == 0) e.dx = rnd.nextInt(2) == 0 ? -1 : 1;
                                     int newX = currentX + e.dx;
@@ -151,7 +154,9 @@ public class GameServer extends AbstractHandler {
                                     e.xMap.put(future, newX);
                                     e.yMap.put(future, currentY);
                                     break;
+
                                 case 2:
+
                                     e.dx = 0;
                                     if (e.dy == 0) e.dy = rnd.nextInt(2) == 0 ? -1 : 1;
                                     int newY = currentY + e.dy;
@@ -163,16 +168,14 @@ public class GameServer extends AbstractHandler {
                                     e.xMap.put(future, currentX);
                                     e.yMap.put(future, newY);
                                     break;
+
                                 case 3:
+
                                     target = Wanderer.calculateNext(e, vicinity);
 
                                     target.x += currentX;
                                     target.y += currentY;
-                                    e.xMap.put(future, target.x);
-                                    e.yMap.put(future, target.y);
-                                    if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
-                                        entityMap[target.x][target.y] = (e.foe ? -1 : 1) * e.getId();
-                                    }
+
                                     break;
 
                                 case 4:
@@ -194,7 +197,9 @@ public class GameServer extends AbstractHandler {
                                         }
 
                                         if (targetEntity != null) {
+
                                             target = Seeker.calculateNext(e, vicinity, targetEntity.x, targetEntity.y);
+
                                         } else {
                                             e.targetEntity = 0;
                                         }
@@ -206,12 +211,20 @@ public class GameServer extends AbstractHandler {
 
                                     target.x += currentX;
                                     target.y += currentY;
-                                    e.xMap.put(future, target.x);
-                                    e.yMap.put(future, target.y);
-                                    if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
+
+                                    break;
+                            }
+
+                            if (e.getAIType() == 3 || e.getAIType() == 4) {
+                                if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
+                                    if (entityMap[target.x][target.y] != 0) {
+                                        System.out.println("Avoiding collision " + e.getId() + " and " + entityMap[target.x][target.y]);
+                                    } else {
+                                        e.xMap.put(future, target.x);
+                                        e.yMap.put(future, target.y);
                                         entityMap[target.x][target.y] = (e.foe ? -1 : 1) * e.getId();
                                     }
-                                    break;
+                                }
                             }
 
                         }
@@ -434,6 +447,11 @@ public class GameServer extends AbstractHandler {
                 y = rnd.nextInt(MAX_Y);
             } while (map[x][y] % 256 > 127 && entityMap[x][y] == 0 && attempts < 100);
 
+            if (attempts >= 100) {
+                System.out.println("Can't find free space!");
+                return null;
+            }
+
             newE.xMap.put(t, x);
             newE.yMap.put(t, y);
 
@@ -458,7 +476,7 @@ public class GameServer extends AbstractHandler {
         timer1.scheduleAtFixedRate(new EntityUpdater(), 0, 256);
 
         Timer timer2 = new Timer();
-        timer2.scheduleAtFixedRate(new EntitySpawner(), 0, 1000);
+        timer2.scheduleAtFixedRate(new EntitySpawner(), 0, 100);
 
     }
 

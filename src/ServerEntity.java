@@ -197,7 +197,7 @@ public class ServerEntity extends ClientEntity {
 
         for (ClientEntity e: worldEntities) {
 
-            if (e.getHealth() == 0) continue;
+            if (e.getHealth() <= 0) continue;
 
             ArrayList<Long> times = new ArrayList<>();
 
