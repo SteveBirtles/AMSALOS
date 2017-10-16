@@ -169,7 +169,7 @@ public class ServerEntity extends ClientEntity {
                 int currentY = e.yMap.get(last);
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
                     if (entityMap[currentX][currentY] != 0) {
-                        System.out.println("Entity collision error @ " + last + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
+                        System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + last + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
                     } else {
                         entityMap[currentX][currentY] = (e.foe ? -1 : 1) * e.getId();
                     }
