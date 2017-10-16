@@ -70,7 +70,6 @@ public class GameServer extends AbstractHandler {
                             if (e2.getId() == e.targetEntity) {
                                 if (e2.health <= 0) {
                                     e.targetEntity = 0;
-                                    e.addKill();
                                     break;
                                 }
                             }
@@ -82,10 +81,21 @@ public class GameServer extends AbstractHandler {
                 int entityMap[][] = ServerEntity.generateEntityMap(worldEntities);
 
                 for (ServerEntity e: worldEntities) {
-                    e.calculateAdjacentEntities(entityMap);
 
-                    e.changeHealth(-e.getAdjacentAttackers());
+                    if (e.getHealth() > 0) {
+                        e.calculateAdjacentEntities(entityMap);
+                        e.changeHealth(-e.getAdjacentAttackers());
 
+                        if (e.getHealth() <= 0) {
+                            ArrayList<Integer> attackers = e.listAdjacentEntities(entityMap);
+                            for (ServerEntity e2: worldEntities) {
+                                if (attackers.contains(e2.getId())) {
+                                    e2.addKill();
+                                }
+                            }
+                        }
+
+                    }
                 }
 
                 for (ServerEntity e: worldEntities) {

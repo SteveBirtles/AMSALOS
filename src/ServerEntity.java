@@ -1,3 +1,5 @@
+import org.omg.PortableInterceptor.INACTIVE;
+
 import java.util.*;
 
 public class ServerEntity extends ClientEntity {
@@ -88,6 +90,48 @@ public class ServerEntity extends ClientEntity {
             }
         }
         return vicinity;
+    }
+
+    public ArrayList<Integer> listAdjacentEntities(int[][] entityMap) {
+
+        ArrayList<Integer> adjacentEntities = new ArrayList<>();
+
+        long last = 0;
+        for (long l : xMap.keySet()) {
+            if (l > last) last = l;
+        }
+
+        adjacentFriends = 0;
+        adjacentFoes = 0;
+
+        if (xMap.containsKey(last) && yMap.containsKey(last)) {
+
+            int currentX = xMap.get(last);
+            int currentY = yMap.get(last);
+
+            if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
+                    && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
+                adjacentEntities.add(Math.abs(entityMap[currentX - 1][currentY]));
+            }
+
+            if (currentY > 0 && entityMap[currentX][currentY - 1] != 0
+                    && Math.abs(entityMap[currentX][currentY - 1]) != getId()) {
+                adjacentEntities.add(Math.abs(entityMap[currentX - 1][currentY]));
+            }
+
+            if (currentX < GameServer.MAX_X - 1 && entityMap[currentX + 1][currentY] != 0
+                    && Math.abs(entityMap[currentX + 1][currentY]) != getId()) {
+                adjacentEntities.add(Math.abs(entityMap[currentX - 1][currentY]));
+            }
+
+            if (currentY < GameServer.MAX_Y - 1 && entityMap[currentX][currentY + 1] != 0
+                    && Math.abs(entityMap[currentX][currentY + 1]) != getId()) {
+                adjacentEntities.add(Math.abs(entityMap[currentX - 1][currentY]));
+            }
+        }
+
+        return adjacentEntities;
+
     }
 
     public void calculateAdjacentEntities(int[][] entityMap) {
