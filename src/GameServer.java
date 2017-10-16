@@ -35,7 +35,12 @@ public class GameServer extends AbstractHandler {
         public void run() {
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
-            int type = rnd.nextInt(16) + 1;
+            int type;
+            if (rnd.nextInt(4) == 0) {
+                type = rnd.nextInt(4) + 1;
+            } else {
+                type = rnd.nextInt(12) + 5;
+            }
             createEntities(1, screen, type, type <= 4 ? 4 : 3);
         }
     }
