@@ -115,16 +115,15 @@ public class GameServer extends AbstractHandler {
                         int currentX = e.xMap.get(last);
                         int currentY = e.yMap.get(last);
 
-                        if (e.adjacentAttackers > 0) {
+                        if (e.getHealth() == 0) {
 
-                            e.setPause(0);
+                            if (e.foe) e.tombstoneAge++;
                             e.xMap.put(future, currentX);
                             e.yMap.put(future, currentY);
 
-                        }
-                        else if (e.getHealth() == 0) {
+                        } else if (e.adjacentAttackers > 0) {
 
-                            if (e.foe) e.tombstoneAge++;
+                            e.setPause(0);
                             e.xMap.put(future, currentX);
                             e.yMap.put(future, currentY);
 
