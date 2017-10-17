@@ -230,33 +230,28 @@ public class GamePlayer extends Application {
                 synchronized (currentEntities) {
                     for (ClientEntity e : currentEntities) {
 
-                        if (e.status.get(time).health <= 0) continue;
+                        if (!e.status.containsKey(time)) continue;
+                        if (!e.status.containsKey(time + 1)) continue;
 
-                        int x1 = -1;
-                        int y1 = -1;
+                        if (e.status.get(time).health <= 0) continue;
 
                         int x0 = e.status.get(time).x;
                         int y0 = e.status.get(time).y;
 
-                        if (e.status.containsKey(time + 1)) {
-                            x1 = e.status.get(time + 1).x;
-                            y1 = e.status.get(time + 1).y;
+                        int x1 = e.status.get(time + 1).x;
+                        int y1 = e.status.get(time + 1).y;
+
+                        int x = (int) (4.0 * (x0 + offset * (x1 - x0)));
+                        int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
+
+                        if (e.status.get(time).adjacentAttackers > 0) {
+                            gc.setFill(Color.RED);
+                        }
+                        else {
+                            gc.setFill(Color.WHITE);
                         }
 
-
-                        if (x1 != -1 && y1 != -1) {
-                            int x = (int) (4.0 * (x0 + offset * (x1 - x0)));
-                            int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
-
-                            if (e.status.get(time).adjacentAttackers > 0) {
-                                gc.setFill(Color.RED);
-                            }
-                            else {
-                                gc.setFill(Color.WHITE);
-                            }
-
-                            gc.fillRect(x, y, 4, 4);
-                        }
+                        gc.fillRect(x, y, 4, 4);
 
                     }
                 }
