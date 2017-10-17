@@ -35,7 +35,7 @@ public class GameClient extends Application {
 
     public static int screen = 0;
     public static boolean justUpdated =  false;
-    public static boolean enableHalfSpeed = true;
+    //public static boolean enableHalfSpeed = false;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
@@ -212,7 +212,7 @@ public class GameClient extends Application {
                                 }
                             }
 
-                            if (enableHalfSpeed && slowPoke.containsKey(e.getId()) && slowPoke.get(e.getId())) {
+                            /*if (enableHalfSpeed && slowPoke.containsKey(e.getId()) && slowPoke.get(e.getId())) {
                                 if (x0 == x1 && y0 == y1) {
                                     if (e.getAdjacentAttackers() > 0) {
                                         slowPoke.put(e.getId(), false);
@@ -228,7 +228,7 @@ public class GameClient extends Application {
                                     lastY0.put(e.getId(), y0);
                                     offset *= 0.5;
                                 }
-                            }
+                            }*/
 
                             if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
                                 int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
@@ -335,13 +335,13 @@ public class GameClient extends Application {
         map = ClientShared.getUpdate(serverAddress, map, screen, currentEntities);
         justUpdated = true;
 
-        for (ClientEntity e : currentEntities) {
+        /*for (ClientEntity e : currentEntities) {
             if (e.getPause() > 0) {
                 slowPoke.put(e.getId(), true);
-            } else if(e.getHealth() <= 0) {
+            } else if(e.getHealth() <= 0 || e.getPause() == 0) {
                 slowPoke.put(e.getId(), false);
             }
-        }
+        }*/
 
     }
 
