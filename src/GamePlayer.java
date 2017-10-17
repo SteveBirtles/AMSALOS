@@ -230,29 +230,25 @@ public class GamePlayer extends Application {
                 synchronized (currentEntities) {
                     for (ClientEntity e : currentEntities) {
 
-                        if (e.getHealth() <= 0) continue;
+                        if (e.status.get(time).health <= 0) continue;
 
-                        int x0 = -1;
-                        int y0 = -1;
                         int x1 = -1;
                         int y1 = -1;
 
-                        for (long t: e.xMap.keySet()) {
-                            if (t == time) {
-                                x0 = e.xMap.get(t);
-                                y0 = e.yMap.get(t);
-                            }
-                            else if (t == time + 1) {
-                                x1 = e.xMap.get(t);
-                                y1 = e.yMap.get(t);
-                            }
+                        int x0 = e.status.get(time).x;
+                        int y0 = e.status.get(time).y;
+
+                        if (e.status.containsKey(time + 1)) {
+                            x1 = e.status.get(time + 1).x;
+                            y1 = e.status.get(time + 1).y;
                         }
 
-                        if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
+
+                        if (x1 != -1 && y1 != -1) {
                             int x = (int) (4.0 * (x0 + offset * (x1 - x0)));
                             int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
 
-                            if (e.getAdjacentAttackers() > 0) {
+                            if (e.status.get(time).adjacentAttackers > 0) {
                                 gc.setFill(Color.RED);
                             }
                             else {

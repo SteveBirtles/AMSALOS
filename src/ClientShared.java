@@ -151,16 +151,25 @@ public class ClientShared {
                                 int pause = Integer.parseInt(entity.get("p").toString());
 
                                 if (entities.containsKey(id)) {
-                                    entities.get(id).xMap.put(time, x);
-                                    entities.get(id).yMap.put(time, y);
+
+                                    long last = 0;
+                                    for (long l: entities.get(id).status.keySet()) {
+                                        if (l > last) last = l;
+                                    }
+
+                                    EntityStatus lastStatus = entities.get(id).status.get(last);
+
+                                    entities.get(id).status.put(time, new EntityStatus(x, y, lastStatus));
+
                                 } else {
-                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
-                                    newE.xMap.put(time, x);
-                                    newE.yMap.put(time, y);
-                                    newE.setKills(kills);
+
+                                    ClientEntity newE = new ClientEntity(id, type, foe);
+
+                                    newE.status.put(time, new EntityStatus(x, y, health, kills, 0, 0, adjacentAttackers));
                                     newE.setName(name);
-                                    newE.setPause(pause);
+
                                     entities.put(id, newE);
+
                                 }
                             }
                         }

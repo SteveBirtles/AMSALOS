@@ -127,8 +127,13 @@ public class Seeker {
 
         }
 
+
+        long last = 0;
+        for (long l : entity.status.keySet()) {
+            if (l > last) last = l;
+        }
         if (!success) {
-            entity.targetEntity = 0;
+            entity.status.get(last).targetEntity = 0;
         }
 
         return new XY(entity.dx, entity.dy);
