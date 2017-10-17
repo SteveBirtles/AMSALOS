@@ -1,4 +1,3 @@
-import Steve.QuickMazeMaker;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
@@ -25,16 +24,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 public class GamePlayer extends Application {
@@ -45,13 +38,8 @@ public class GamePlayer extends Application {
     public static final int MAX_Y = 17;
     public static final int SPRITE_COUNT = 16;
 
-    //public static int screen = 0;
-    public static long maptimestamp = 0;
-    public static int failCount = 0;
-
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
-    //static int viewportPosition = 0;
 
     public static String serverAddress = "localhost";
     public static boolean fullscreen = false;
@@ -61,7 +49,6 @@ public class GamePlayer extends Application {
     public static ImageView selectedEntityImageView;
     public static int selectedEntity = 1;
 
-    @SuppressWarnings("Duplicates")
     public static void main(String[] args) {
         fullscreen = true;
         try {
@@ -82,11 +69,10 @@ public class GamePlayer extends Application {
 
     public void addEntity(int screen) {
         int aiType = (selectedEntity + 1) % 4;
-        requestPost("add=" + selectedEntity + "&screen=" + screen + "&aitype=" + aiType);
+        ClientShared.requestPost(serverAddress, "add=" + selectedEntity + "&screen=" + screen + "&aitype=" + aiType);
     }
 
     @SuppressWarnings("Duplicates")
-    @Override
     public void start(Stage stage) {
 
         Pane rootPane = new Pane();
@@ -210,13 +196,13 @@ public class GamePlayer extends Application {
 
                     if (keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) {
                         if (k == KeyCode.Z) {
-                            requestPost("reset=1");
+                            ClientShared.requestPost(serverAddress, "reset=1");
                         }
                         else if (k == KeyCode.X) {
-                            requestPost("reset=2");
+                            ClientShared.requestPost(serverAddress, "reset=2");
                         }
                         else if (k == KeyCode.C) {
-                            requestPost("reset=3");
+                            ClientShared.requestPost(serverAddress, "reset=3");
                         }
                     }
                 }
@@ -284,158 +270,11 @@ public class GamePlayer extends Application {
 
         Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(256),
-                ae -> getUpdate()));
+                ae -> map = ClientShared.getUpdate(serverAddress, map, 0, currentEntities)));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
     }
 
-    @SuppressWarnings("Duplicates")
-    public static void requestPost(String query) {
-
-        URL url;
-        HttpURLConnection con;
-
-        try {
-            url = new URL( "http://" + serverAddress + ":8081?" + query);
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            int responseCode = 0;
-            try {
-                responseCode = con.getResponseCode();
-            }
-            catch (ConnectException ce) {
-                System.out.println("Unable to connect to server...");
-            }
-            if (responseCode != 200) {
-                System.out.println("HTTP POST ERROR: " + responseCode);
-            }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    @SuppressWarnings("Duplicates")
-    public static void getUpdate() {
-
-        long clientTime = System.currentTimeMillis() >> 8;
-        HashMap<Integer, ClientEntity> entities = new HashMap<>();
-
-        URL url;
-        HttpURLConnection con;
-
-        try {
-            url = new URL( "http://" + serverAddress + ":8081"
-                    + "?index=" + clientTime
-                    + "&player=true"
-                    + "&mapTimeStamp=" + maptimestamp
-                    + "&map=" + (map == null ? "true" : "false"));
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            int responseCode = 0;
-            try {
-                responseCode = con.getResponseCode();
-            }
-            catch (ConnectException ce) {
-                System.out.println("Unable to connect to server...");
-                failCount++;
-                if (failCount > 10) System.exit(-10);
-            }
-
-            if (responseCode == 200) {
-                failCount = 0;
-                InputStream inputStream = con.getInputStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-                String inputjson = "";
-                while (br.ready()) {
-                    inputjson = br.readLine();
-                }
-
-                JSONParser parser = new JSONParser();
-                Object obj = parser.parse(inputjson);
-                JSONObject jsonObject = (JSONObject) obj;
-
-                if (jsonObject.containsKey("map")) {
-
-                    map = QuickMazeMaker.emptyMap(MAX_X, MAX_Y);
-
-                    String mapString = jsonObject.get("map").toString();
-
-                    int x = 0;
-                    int y = 0;
-                    for (String value : mapString.split(",")) {
-                        map[x][y] = Integer.parseInt(value);
-                        x++;
-                        if (x == MAX_X) {
-                            x = 0;
-                            y++;
-                            if (y == MAX_Y) break;
-                        }
-                    }
-
-                }
-
-                if (jsonObject.containsKey("mapTimeStamp")) {
-                    maptimestamp = Long.parseLong(jsonObject.get("mapTimeStamp").toString());
-                    //System.out.println("Recieved: " + mapTimeStamp);
-                }
-
-                if (jsonObject.containsKey("frames")) {
-
-                    JSONArray frameArray = (JSONArray) jsonObject.get("frames");
-                    for (Object frameObject : frameArray) {
-                        JSONObject frame = (JSONObject) frameObject;
-
-                        long time = -1;
-
-                        if (frame.containsKey("time") && frame.containsKey("position") && frame.containsKey("entities")) {
-
-                            time = Long.parseLong(frame.get("time").toString());
-
-                            JSONArray entityArray = (JSONArray) frame.get("entities");
-
-                            for (Object entityObject : entityArray) {
-                                JSONObject entity = (JSONObject) entityObject;
-                                int id = Integer.parseInt(entity.get("i").toString());
-                                int type = Integer.parseInt(entity.get("t").toString());
-                                int x = Integer.parseInt(entity.get("x").toString());
-                                int y = Integer.parseInt(entity.get("y").toString());
-                                double health = Double.parseDouble(entity.get("h").toString());
-                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
-                                boolean foe = Boolean.parseBoolean(entity.get("f").toString());
-                                int target = Integer.parseInt(entity.get("z").toString());
-                                String name = entity.get("n").toString();
-                                int kills = Integer.parseInt(entity.get("k").toString());
-
-                                if (entities.containsKey(id)) {
-                                    entities.get(id).xMap.put(time, x);
-                                    entities.get(id).yMap.put(time, y);
-                                } else {
-                                    ClientEntity newE = new ClientEntity(id, type, health, adjacentAttackers, foe, target);
-                                    newE.xMap.put(time, x);
-                                    newE.yMap.put(time, y);
-                                    newE.setKills(kills);
-                                    newE.setName(name);
-                                    entities.put(id, newE);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                synchronized (currentEntities) {
-                    currentEntities.clear();
-                    for (ClientEntity e : entities.values()) {
-                        currentEntities.add(e);
-                    }
-                }
-            }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-    }
 }
 

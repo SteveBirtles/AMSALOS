@@ -28,8 +28,6 @@ public class ServerEntity extends ClientEntity {
         this.dy = 0;
     }
 
-    public void addKill() { this.kills++; }
-
     public void pickNextTarget(int[][] vicinity, int[][] entityMap, int currentX, int currentY) {
 
         double bestDistance = GameServer.VICINITY_SIZE;

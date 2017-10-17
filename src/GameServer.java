@@ -14,7 +14,7 @@ import java.util.*;
 
 public class GameServer extends AbstractHandler {
 
-    public final static boolean debug = false;
+    public final static boolean debug = true;
 
     public final static ArrayList<ServerEntity> worldEntities = new ArrayList<>();
     public final static int MAX_X = 401;
@@ -87,6 +87,7 @@ public class GameServer extends AbstractHandler {
                         e.changeHealth(-e.getAdjacentAttackers());
 
                         if (e.getHealth() <= 0) {
+                            e.setPause(0);
                             ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
                             for (ServerEntity e2: worldEntities) {
                                 if (attackers.contains(e2.getId())) {
@@ -116,6 +117,7 @@ public class GameServer extends AbstractHandler {
 
                         if (e.adjacentAttackers > 0) {
 
+                            e.setPause(0);
                             e.xMap.put(future, currentX);
                             e.yMap.put(future, currentY);
 
@@ -175,14 +177,22 @@ public class GameServer extends AbstractHandler {
 
                                 case 3:
 
-                                    target = Wanderer.calculateNext(e, vicinity);
+                                    if (e.getPause() == 1) { e.setPause(2); }
+                                    else {e.setPause(1); }
 
-                                    target.x += currentX;
-                                    target.y += currentY;
+                                    if (e.getPause() == 1) {
+                                        target = Wanderer.calculateNext(e, vicinity);
+                                        target.x += currentX;
+                                        target.y += currentY;
+                                    } else {
+                                        target = new XY(currentX, currentY);
+                                    }
 
                                     break;
 
                                 case 4:
+
+                                    e.setPause(0);
 
                                     if (e.targetEntity == 0) {
                                         e.pickNextTarget(vicinity, entityMap, currentX, currentY);
@@ -225,6 +235,7 @@ public class GameServer extends AbstractHandler {
                                         //System.out.println("Avoiding collision " + e.getId() + " and " + entityMap[target.x][target.y]);
                                         e.xMap.put(future, currentX);
                                         e.yMap.put(future, currentY);
+                                        e.setPause(0);
                                     } else {
                                         e.xMap.put(future, target.x);
                                         e.yMap.put(future, target.y);
@@ -381,6 +392,7 @@ public class GameServer extends AbstractHandler {
 
                                 entity.put("n", e.getName());
                                 entity.put("k", e.getKills());
+                                entity.put("p", e.getPause());
 
                                 entities.add(entity);
                             }

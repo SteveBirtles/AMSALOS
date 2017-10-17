@@ -2,14 +2,15 @@ import java.util.HashMap;
 
 public class ClientEntity {
 
-    protected int id;
-    protected int type;
-    protected double health;
-    protected int adjacentAttackers;
-    protected boolean foe;
+    int id;
+    int type;
+    double health;
+    int adjacentAttackers;
+    boolean foe;
 
-    protected String name;
-    protected int kills;
+    private String name;
+    private int kills;
+    private int pause;
 
     public int targetEntity;
     public HashMap<Long, Integer> xMap;
@@ -26,6 +27,7 @@ public class ClientEntity {
         this.targetEntity = target;
         this.kills = 0;
         this.name = "";
+        this.pause = 0;
     }
 
     public int getId() {
@@ -44,6 +46,10 @@ public class ClientEntity {
 
     public void setKills(int kills) { this.kills = kills; }
     public int getKills() { return this.kills; }
+    public void addKill() { this.kills++; }
+
+    public void setPause(int pause) { this.pause = pause; }
+    public int getPause() { return this.pause; }
 
 }
 
