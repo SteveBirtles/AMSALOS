@@ -145,24 +145,13 @@ public class ServerEntity extends ClientEntity {
             int currentX = status.get(time).x;
             int currentY = status.get(time).y;
 
-            if (entityMap[currentX][currentY] != 0 &&
-                    Math.abs(entityMap[currentX][currentY]) != getId()) {
-                if (entityMap[currentX][currentY] > 0) {
-                    if (entityMap[currentX][currentY] <= 128) {
-                        adjacentFriends++;
-                    }
-                } else if (entityMap[currentX][currentY] < 0) {
-                    System.out.println("adjacentFoes++");
-                    adjacentFoes++;
-                }
-            }
-
             if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
                     && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
                 if (entityMap[currentX - 1][currentY] > 0) {
                     if (entityMap[currentX - 1][currentY] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX - 1][currentY] < 0) {
+                    System.out.println("adjacentFoes++");
                     adjacentFoes++;
                 }
             }
@@ -173,6 +162,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX][currentY - 1] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX][currentY - 1] < 0) {
+                    System.out.println("adjacentFoes++");
                     adjacentFoes++;
                 }
             }
@@ -183,6 +173,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX + 1][currentY] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX + 1][currentY] < 0) {
+                    System.out.println("adjacentFoes++");
                     adjacentFoes++;
                 }
             }
@@ -193,6 +184,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX][currentY + 1] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX][currentY + 1] < 0) {
+                    System.out.println("adjacentFoes++");
                     adjacentFoes++;
                 }
             }

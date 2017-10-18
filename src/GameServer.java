@@ -324,7 +324,7 @@ public class GameServer extends AbstractHandler {
                         e.calculateAdjacentEntities(attackMap);
 
                         if (e.getFoe()) {
-                            System.out.println("Hurting foe: " + (-e.adjacentAttackers));
+                            if (e.adjacentAttackers > 0) System.out.println("KILL");
                             e.changeHealth(-e.adjacentAttackers);
                         } else {
                             //System.out.println("Hurting friend: " + (-e.adjacentAttackers));

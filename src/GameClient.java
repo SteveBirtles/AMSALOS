@@ -9,6 +9,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -97,7 +98,7 @@ public class GameClient extends Application {
             @Override
             public void handle(long now) {
 
-                for(KeyCode k : keysPressed) {
+                for (KeyCode k : keysPressed) {
 
                     if (k == KeyCode.ESCAPE) System.exit(0);
 
@@ -164,12 +165,11 @@ public class GameClient extends Application {
                                 gc.drawImage(tiles, column * 64 + 32, row * 64, 32, 32, x * 64, y * 64 - 32, 32, 32);
 
                                 column = (baseTile + quarter3) % 16;
-                                gc.drawImage(tiles, column * 64, row * 64 + 32, 32, 32, x * 64 - 32, y * 64 , 32, 32);
+                                gc.drawImage(tiles, column * 64, row * 64 + 32, 32, 32, x * 64 - 32, y * 64, 32, 32);
 
                                 column = (baseTile + quarter4) % 16;
-                                gc.drawImage(tiles, column * 64 + 32, row * 64 + 32, 32, 32, x * 64 , y * 64, 32, 32);
-                            }
-                            else {
+                                gc.drawImage(tiles, column * 64 + 32, row * 64 + 32, 32, 32, x * 64, y * 64, 32, 32);
+                            } else {
                                 gc.drawImage(tiles, column * 64, row * 64, 64, 64, x * 64 - 32, y * 64 - 32, 64, 64);
                             }
                         }
@@ -184,8 +184,10 @@ public class GameClient extends Application {
 
                 DropShadow friendly = new DropShadow(20, Color.BLACK);
 
-                Font nameFont = new Font( "Arial", 24);
-                Font killFont = new Font( "Arial", 16);
+                GaussianBlur timeyblur = new GaussianBlur(5);
+
+                Font nameFont = new Font("Arial", 24);
+                Font killFont = new Font("Arial", 16);
 
                 synchronized (currentEntities) {
 
@@ -193,15 +195,20 @@ public class GameClient extends Application {
 
                         int layer = 0;
                         switch (fudge) {
-                            case 1: layer = 2; break;
-                            case 2: layer = 1; break;
+                            case 1:
+                                layer = 2;
+                                break;
+                            case 2:
+                                layer = 1;
+                                break;
                         }
 
                         for (ClientEntity e : currentEntities) {
 
                             if (!e.status.containsKey(time)) continue;
 
-                            if ((layer == 0 && e.status.get(time).health > 0) || (layer == 1 && e.status.get(time).health <= 0)) continue;
+                            if ((layer == 0 && e.status.get(time).health > 0) || (layer == 1 && e.status.get(time).health <= 0))
+                                continue;
 
                             if (layer < 2 && e.getType() > 128) continue;
                             if (layer == 2 && e.getType() < 129) continue;
@@ -226,8 +233,7 @@ public class GameClient extends Application {
 
                                 if (layer == 2) {
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
-                                }
-                                else if (layer == 1) {
+                                } else if (layer == 1) {
                                     if (!e.getFoe()) gc.setEffect(friendly);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
                                     gc.setEffect(null);
@@ -237,8 +243,7 @@ public class GameClient extends Application {
                                     gc.setFill(Color.rgb(255, 0, 0, 0.5));
                                     gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH + 64 * e.status.get(time).health, y - 20, 64 * (1 - e.status.get(time).health), 10);
 
-                                }
-                                else {
+                                } else {
                                     gc.setEffect(dead);
                                     double alpha = 1 + e.status.get(time).health;
                                     if (alpha < 0) alpha = 0;
@@ -253,7 +258,7 @@ public class GameClient extends Application {
 
                                 if (layer < 2 && !e.getFoe() && !e.getName().equals("")) {
                                     if (layer == 1) {
-                                        gc.setFill(Color.rgb(255, 255, 255 ));
+                                        gc.setFill(Color.rgb(255, 255, 255));
                                     } else {
                                         gc.setFill(Color.rgb(0, 0, 0));
                                     }
@@ -261,25 +266,56 @@ public class GameClient extends Application {
                                     gc.setTextAlign(TextAlignment.CENTER);
                                     gc.setTextBaseline(VPos.CENTER);
                                     gc.setFont(nameFont);
-                                    gc.fillText(e.getName(), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 16*(1 + layer));
+                                    gc.fillText(e.getName(), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 16 * (1 + layer));
                                     gc.setFont(killFont);
-                                    gc.fillText("Score: " + e.status.get(time).score, x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y+72);
+                                    gc.fillText("Score: " + e.status.get(time).score, x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y + 72);
                                 }
 
                                 gc.setEffect(null);
                             }
 
+                            if (layer == 2) {
+
+                                for (long timeywimey : e.status.keySet()) {
+
+                                    offset = (System.currentTimeMillis() % 256) / 256.0;
+
+                                    x1 = -1;
+                                    y1 = -1;
+
+                                    x0 = e.status.get(timeywimey).x;
+                                    y0 = e.status.get(timeywimey).y;
+                                    if (e.status.containsKey(timeywimey + 1)) {
+                                        x1 = e.status.get(timeywimey + 1).x;
+                                        y1 = e.status.get(timeywimey + 1).y;
+                                    }
+
+                                    if (x1 != -1 && y1 != -1) {
+                                        int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
+                                        int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
+                                        int column = (e.getType() - 1) % 16;
+                                        int row = (e.getType() - 1) / 16;
+
+                                        gc.setEffect(timeyblur);
+                                        gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
+                                        gc.setEffect(null);
+
+                                    }
+
+                                }
+                            }
                         }
+
+
+                        if (justUpdated) {
+                            justUpdated = false;
+                            //gc.setFill(Color.rgb(255,255,255,0.5));
+                            //gc.fillRect(0, 0, 32, 32);
+                        }
+
+
                     }
                 }
-
-                if (justUpdated) {
-                    justUpdated = false;
-                    //gc.setFill(Color.rgb(255,255,255,0.5));
-                    //gc.fillRect(0, 0, 32, 32);
-                }
-
-
             }
         }.start();
 
