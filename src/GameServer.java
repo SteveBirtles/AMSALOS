@@ -1,4 +1,3 @@
-import Steve.QuickNameMaker;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -25,6 +24,10 @@ public class GameServer extends AbstractHandler {
     public final static int VICINITY_SIZE = 17;
     public final static int VICINITY_CENTRE = 8;
 
+    public final static int MAX_POWERUPS = 200;
+    public final static int MAX_ENEMIES = 200;
+    public final static int MAX_PLAYERS = 200;
+
     public long mapTimeStamp;
 
     private int[][] map = null;
@@ -34,17 +37,44 @@ public class GameServer extends AbstractHandler {
     public class EntitySpawner extends TimerTask {
 
         public void run() {
+
+            int enemyCount = 0;
+            int powerUpCount = 0;
+            int playerCount = 0;
+            int tombstoneCount = 0;
+
+            synchronized (worldEntities) {
+                for (ServerEntity e: worldEntities) {
+                    long last = 0;
+                    for (long l: e.status.keySet()) {
+                        if (l > last) last = l;
+                    }
+                    if (e.getType() > 128) {
+                        powerUpCount++;
+                    } else if (e.status.get(last).health <= 0) {
+                        tombstoneCount++;
+                    } else if (e.getType() < 16) {
+                        playerCount++;
+                    } else {
+                        enemyCount++;
+                    }
+                }
+            }
+
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
-
             int goodOrBad = rnd.nextInt(2);
 
             switch (goodOrBad) {
                 case 0:
-                    createEntity(screen, rnd.nextInt(9) + 129, 0);
+                    if (powerUpCount < MAX_POWERUPS) {
+                        createEntity(screen, rnd.nextInt(9) + 129, 0);
+                    }
                     break;
                 case 1:
-                    createEntity(screen,  rnd.nextInt(12) + 17, 3);
+                    if (enemyCount < MAX_ENEMIES) {
+                        createEntity(screen, rnd.nextInt(12) + 17, 3);
+                    }
                     break;
             }
 
@@ -77,6 +107,18 @@ public class GameServer extends AbstractHandler {
                     if (e.tombstoneAge > 40) expired.add(e);
                     if (e.status.get(last).targetEntity > 0 && e.status.get(last).health > 0) {
                         for (ServerEntity e2: worldEntities) {
+
+                            if (e.getType() <= 16 && e2.getType() > 128) {
+                                long last2 = 0;
+                                for (long l: e.status.keySet()) {
+                                    if (l > last2) last2 = l;
+                                }
+                                if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
+                                    expired.add(e2);
+                                    e.status.get(last).score += 10;
+                                }
+                            }
+
                             if (e2.getId() == e.status.get(last).targetEntity) {
                                 if (e.status.get(last).health <= 0) {
                                     e.status.get(last).targetEntity = 0;
@@ -108,7 +150,7 @@ public class GameServer extends AbstractHandler {
                             ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
                             for (ServerEntity e2: worldEntities) {
                                 if (attackers.contains(e2.getId())) {
-                                    e2.status.get(last).score++;
+                                    e2.status.get(last).score += 100;
                                 }
                             }
                         }
