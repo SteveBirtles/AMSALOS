@@ -54,7 +54,7 @@ public class GamePlayer extends Application {
     public static ImageView selectedEntityImageView;
     public static int selectedEntity = 1;
 
-    public static int selectedSkill = 0;
+    public static int selectedSkill = 1;
     public static String[] skillName = {"Resilience", "Offensive", "Defensive", "Greed"};
     public static Button[] skillButtons;
 

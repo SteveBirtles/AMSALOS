@@ -247,9 +247,9 @@ public class GameClient extends Application {
                                     gc.setGlobalAlpha(1.0);
                                 }
 
-                                gc.setFill(Color.rgb(0, 0, 64));
-                                gc.setFont(nameFont);
-                                gc.fillText(Long.toString(time), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 20);
+                                //gc.setFill(Color.rgb(0, 0, 64));
+                                //gc.setFont(nameFont);
+                                //gc.fillText(Long.toString(time), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 20);
 
                                 if (layer < 2 && !e.getFoe() && !e.getName().equals("")) {
                                     if (layer == 1) {
