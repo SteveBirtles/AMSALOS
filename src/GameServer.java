@@ -104,7 +104,7 @@ public class GameServer extends AbstractHandler {
 
             synchronized (worldEntities) {
 
-                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true);
+                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true, present, future);
 
                 for (ServerEntity e : worldEntities) {
 
@@ -258,7 +258,7 @@ public class GameServer extends AbstractHandler {
                     }
                 }
 
-                entityMap = ServerEntity.generateEntityMap(worldEntities, true);
+                entityMap = ServerEntity.generateEntityMap(worldEntities, true, present, future);
 
                 for (ServerEntity e : worldEntities) {
 
@@ -550,7 +550,7 @@ public class GameServer extends AbstractHandler {
 
         synchronized (worldEntities) {
 
-            int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, false);
+            int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, false, t, t);
 
             boolean foe = (type >= 17 && type <= 32);
 

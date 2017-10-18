@@ -204,43 +204,41 @@ public class ServerEntity extends ClientEntity {
 
 
 
-    public static int[][] generateEntityMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups) {
+    public static int[][] generateEntityMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups, long first, long last) {
 
         ArrayList<Integer> entityDone = new ArrayList<>();
 
         int[][] entityMap = new int[GameServer.MAX_X][GameServer.MAX_Y];
 
-        for (ClientEntity e: worldEntities) {
+        for (long time = first; time <= last; time++) {
 
-            if (entityDone.contains(e.getId())) continue;
+            for (ClientEntity e : worldEntities) {
 
-            if (ignorePowerups && e.getType() > 128) continue;
+                if (entityDone.contains(e.getId())) continue;
 
-            long time = 0;
-            for (long l : e.status.keySet()) {
-                if (l > time) time = l;
-            }
+                if (ignorePowerups && e.getType() > 128) continue;
 
-            if (!e.status.containsKey(time)) continue;
+                if (!e.status.containsKey(time)) continue;
 
-            if (e.status.get(time).health <= 0) continue;
+                if (e.status.get(time).health <= 0) continue;
 
-            //System.out.print("Entity " + e.getId() + " is foe? " + e.getFoe() + " : ");
+                //System.out.print("Entity " + e.getId() + " is foe? " + e.getFoe() + " : ");
 
-            if (e.status.containsKey(time)) {
-                int currentX = e.status.get(time).x;
-                int currentY = e.status.get(time).y;
-                if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
-                    if (entityMap[currentX][currentY] != 0) {
-                        System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + time + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
+                if (e.status.containsKey(time)) {
+                    int currentX = e.status.get(time).x;
+                    int currentY = e.status.get(time).y;
+                    if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
+                        if (entityMap[currentX][currentY] != 0) {
+                            System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + time + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
+                        }
+                        //System.out.println((e.getFoe() ? -1 : 1) * e.getId());
+                        if (entityMap[currentX][currentY] == 0) {
+                            entityMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
+                            entityDone.add(e.getId());
+                        }
+                    } else {
+                        //System.out.println();
                     }
-                    //System.out.println((e.getFoe() ? -1 : 1) * e.getId());
-                    if (entityMap[currentX][currentY] == 0) {
-                        entityMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
-                        entityDone.add(e.getId());
-                    }
-                } else {
-                    //System.out.println();
                 }
             }
         }
