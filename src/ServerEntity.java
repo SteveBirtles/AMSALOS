@@ -129,7 +129,12 @@ public class ServerEntity extends ClientEntity {
         return adjacentEntities;
     }
 
-    public void calculateAdjacentEntities(int[][] entityMap, long time) {
+    public void calculateAdjacentEntities(int[][] entityMap) {
+
+        long time = 0;
+        for (long l: status.keySet()) {
+            if (l > time) time = l;
+        }
 
         adjacentFriends = 0;
         adjacentFoes = 0;
@@ -142,7 +147,8 @@ public class ServerEntity extends ClientEntity {
             if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
                     && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
                 if (entityMap[currentX - 1][currentY] > 0) {
-                    if (entityMap[currentX - 1][currentY] <= 128) adjacentFriends++;
+                    //if (entityMap[currentX - 1][currentY] <= 128)
+                    adjacentFriends++;
                 } else if (entityMap[currentX - 1][currentY] < 0) {
                     adjacentFoes++;
                 }
@@ -151,7 +157,8 @@ public class ServerEntity extends ClientEntity {
             if (currentY > 0 && entityMap[currentX][currentY - 1] != 0
                     && Math.abs(entityMap[currentX][currentY - 1]) != getId()) {
                 if (entityMap[currentX][currentY - 1] > 0) {
-                    if (entityMap[currentX][currentY - 1] <= 128) adjacentFriends++;
+                    //if (entityMap[currentX][currentY - 1] <= 128)
+                        adjacentFriends++;
                 } else if (entityMap[currentX][currentY - 1] < 0) {
                     adjacentFoes++;
                 }
@@ -160,7 +167,8 @@ public class ServerEntity extends ClientEntity {
             if (currentX < GameServer.MAX_X - 1 && entityMap[currentX + 1][currentY] != 0
                     && Math.abs(entityMap[currentX + 1][currentY]) != getId()) {
                 if (entityMap[currentX + 1][currentY] > 0) {
-                    if (entityMap[currentX + 1][currentY] <= 128) adjacentFriends++;
+                    //if (entityMap[currentX + 1][currentY] <= 128)
+                    adjacentFriends++;
                 } else if (entityMap[currentX + 1][currentY] < 0) {
                     adjacentFoes++;
                 }
@@ -169,7 +177,8 @@ public class ServerEntity extends ClientEntity {
             if (currentY < GameServer.MAX_Y - 1 && entityMap[currentX][currentY + 1] != 0
                     && Math.abs(entityMap[currentX][currentY + 1]) != getId()) {
                 if (entityMap[currentX][currentY + 1] > 0) {
-                    if (entityMap[currentX][currentY + 1] <= 128) adjacentFriends++;
+                    //if (entityMap[currentX][currentY + 1] <= 128)
+                    adjacentFriends++;
                 } else if (entityMap[currentX][currentY + 1] < 0) {
                     adjacentFoes++;
                 }

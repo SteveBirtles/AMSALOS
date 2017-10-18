@@ -164,7 +164,7 @@ public class GameServer extends AbstractHandler {
                     if (!e.status.containsKey(time)) continue;
 
                     if (e.status.get(time).health > 0) {
-                        e.calculateAdjacentEntities(entityMap, time);
+                        e.calculateAdjacentEntities(entityMap);
                         e.changeHealth(-e.status.get(time).adjacentAttackers);
 
                         if (e.status.get(time).health <= 0) {
