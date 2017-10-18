@@ -212,32 +212,38 @@ public class ServerEntity extends ClientEntity {
 
         for (long time = first; time <= last; time++) {
 
-            for (ClientEntity e : worldEntities) {
+            for (int enemy = 0; enemy < 2; enemy++) {
 
-                if (entityDone.contains(e.getId())) continue;
+                for (ClientEntity e : worldEntities) {
 
-                if (ignorePowerups && e.getType() > 128) continue;
+                    if (!e.getFoe() && enemy == 0) continue;
+                    if (e.getFoe() && enemy == 1) continue;
 
-                if (!e.status.containsKey(time)) continue;
+                    if (entityDone.contains(e.getId())) continue;
 
-                if (e.status.get(time).health <= 0) continue;
+                    if (ignorePowerups && e.getType() > 128) continue;
 
-                //System.out.print("Entity " + e.getId() + " is foe? " + e.getFoe() + " : ");
+                    if (!e.status.containsKey(time)) continue;
 
-                if (e.status.containsKey(time)) {
-                    int currentX = e.status.get(time).x;
-                    int currentY = e.status.get(time).y;
-                    if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
-                        if (entityMap[currentX][currentY] != 0) {
-                            System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + time + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
+                    if (e.status.get(time).health <= 0) continue;
+
+                    //System.out.print("Entity " + e.getId() + " is foe? " + e.getFoe() + " : ");
+
+                    if (e.status.containsKey(time)) {
+                        int currentX = e.status.get(time).x;
+                        int currentY = e.status.get(time).y;
+                        if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
+                            if (entityMap[currentX][currentY] != 0) {
+                                System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + time + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
+                            }
+                            //System.out.println((e.getFoe() ? -1 : 1) * e.getId());
+                            if (entityMap[currentX][currentY] == 0) {
+                                entityMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
+                                entityDone.add(e.getId());
+                            }
+                        } else {
+                            //System.out.println();
                         }
-                        //System.out.println((e.getFoe() ? -1 : 1) * e.getId());
-                        if (entityMap[currentX][currentY] == 0) {
-                            entityMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
-                            entityDone.add(e.getId());
-                        }
-                    } else {
-                        //System.out.println();
                     }
                 }
             }

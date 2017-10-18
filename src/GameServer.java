@@ -104,7 +104,7 @@ public class GameServer extends AbstractHandler {
 
             synchronized (worldEntities) {
 
-                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true, present, future);
+                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true, future-1, future);
 
                 for (ServerEntity e : worldEntities) {
 
@@ -258,7 +258,7 @@ public class GameServer extends AbstractHandler {
                     }
                 }
 
-                entityMap = ServerEntity.generateEntityMap(worldEntities, true, present, future);
+                entityMap = ServerEntity.generateEntityMap(worldEntities, true, future-1, future);
 
                 for (ServerEntity e : worldEntities) {
 
