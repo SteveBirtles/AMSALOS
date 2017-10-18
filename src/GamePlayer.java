@@ -11,6 +11,8 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -21,11 +23,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,6 +54,12 @@ public class GamePlayer extends Application {
     public static ImageView selectedEntityImageView;
     public static int selectedEntity = 1;
 
+    public static int selectedSkill = 0;
+    public static String[] skillName = {"Resilience", "Offensive", "Defensive", "Greed"};
+    public static Button[] skillButtons;
+
+    public static TextField nameBox;
+
     public static void main(String[] args) {
         fullscreen = true;
         try {
@@ -67,9 +78,28 @@ public class GamePlayer extends Application {
         selectedEntityImageView.setViewport(new Rectangle2D((selectedEntity-1)*64,0,64,64));
     }
 
+    public void setSelectedSkill(int number) {
+        selectedSkill = number;
+        for (int i = 0; i < 4; i++) {
+            skillButtons[i].setStyle("-fx-border-color: transparent;\n" +
+                    "-fx-border-width: 0;\n" +
+                    "-fx-background-radius: 0;\n" +
+                    "-fx-background-color: " + (i == number - 1 ? "gold;" : "silver;") +
+                    "-fx-font-size: 24;" +
+                    "-fx-font-family: monospace;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-text-fill: black;");
+        }
+    }
+
     public void addEntity(int screen) {
-        int aiType = (selectedEntity + 1) % 4;
-        ClientShared.requestPost(serverAddress, "add=" + selectedEntity + "&screen=" + screen + "&aitype=" + aiType);
+        String playerName = null;
+        try {
+            playerName = URLEncoder.encode(nameBox.getText(),"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        ClientShared.requestPost(serverAddress, "add=" + selectedEntity + "&screen=" + screen + "&aitype=4&name=" + playerName + "&skill=" + selectedSkill);
     }
 
     @SuppressWarnings("Duplicates")
@@ -148,6 +178,35 @@ public class GamePlayer extends Application {
         entityView.setPadding(new Insets(32));
         entityView.setAlignment(Pos.BOTTOM_CENTER);
 
+        HBox nameChooser = new HBox(32);
+        nameChooser.setPrefWidth(700);
+        nameChooser.setAlignment(Pos.CENTER);
+        Label nameLabel = new Label("Player name:");
+        nameLabel.setPrefWidth(200);
+        nameLabel.setTextAlignment(TextAlignment.RIGHT);
+        nameLabel.setStyle("-fx-border-color: transparent;\n" +
+                "-fx-border-width: 0;\n" +
+                "-fx-background-radius: 0;\n" +
+                "-fx-background-color: black;" +
+                "-fx-font-size: 24;" +
+                "-fx-font-family: monospace;" +
+                "-fx-font-weight: bold;" +
+                "-fx-text-fill: darkgrey;");
+        nameChooser.getChildren().add(nameLabel);
+
+        nameBox = new TextField();
+        nameBox.setPrefWidth(400);
+        nameBox.setStyle("-fx-border-color: transparent;\n" +
+                "-fx-border-width: 0;\n" +
+                "-fx-background-radius: 0;\n" +
+                "-fx-background-color: navy;" +
+                "-fx-font-size: 24;" +
+                "-fx-font-family: monospace;" +
+                "-fx-font-weight: bold;" +
+                "-fx-text-fill: white;");
+        nameChooser.getChildren().add(nameBox);
+        entityView.getChildren().add(nameChooser);
+
         selectedEntityImageView = new ImageView();
         selectedEntityImageView.setImage(sprites);
         selectedEntityImageView.setFitWidth(384);
@@ -177,14 +236,36 @@ public class GamePlayer extends Application {
         entityChooser.setMaxWidth(1604);
         entityChooser.setAlignment(Pos.CENTER);
         entityView.getChildren().add(entityChooser);
-        borderPane.setCenter(entityView);
-        borderPane.setAlignment(entityChooser, Pos.BOTTOM_CENTER);
 
+        HBox skillChooser = new HBox();
+        skillChooser.setSpacing(10);
+        skillButtons = new Button[4];
+        for (int i = 0; i < 4; i++) {
+            skillButtons[i] = new Button(skillName[i]);
+            skillButtons[i].setPrefWidth(200);
+            skillButtons[i].setStyle("-fx-border-color: transparent;\n" +
+                    "-fx-border-width: 0;\n" +
+                    "-fx-background-radius: 0;\n" +
+                    "-fx-background-color: " + (i == selectedSkill - 1 ? "gold;" : "silver;") +
+                    "-fx-font-size: 24;" +
+                    "-fx-font-family: monospace;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-text-fill: black;");
+
+            final int skillNumber = i + 1;
+            skillButtons[i].setOnAction((ActionEvent e) -> setSelectedSkill(skillNumber));
+            skillChooser.getChildren().add(skillButtons[i]);
+        }
+        skillChooser.setMaxWidth(1604);
+        skillChooser.setAlignment(Pos.CENTER);
+        entityView.getChildren().add(skillChooser);
+
+        borderPane.setCenter(entityView);
+        borderPane.setAlignment(entityView, Pos.BOTTOM_CENTER);
 
         rootPane.getChildren().add(borderPane);
 
         GraphicsContext gc = miniMapCanvas.getGraphicsContext2D();
-
 
         new AnimationTimer() {
             @Override
@@ -247,8 +328,14 @@ public class GamePlayer extends Application {
                         if (e.status.get(time).adjacentAttackers > 0) {
                             gc.setFill(Color.RED);
                         }
+                        else if (e.getType() > 128) {
+                            gc.setFill(Color.DARKCYAN);
+                        }
+                        else if (e.foe) {
+                            gc.setFill(Color.DARKGOLDENROD);
+                        }
                         else {
-                            gc.setFill(Color.WHITE);
+                            gc.setFill(Color.LIMEGREEN);
                         }
 
                         gc.fillRect(x, y, 4, 4);
@@ -268,4 +355,5 @@ public class GamePlayer extends Application {
     }
 
 }
+
 

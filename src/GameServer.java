@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -325,6 +326,8 @@ public class GameServer extends AbstractHandler {
         int addEntity = -1;
         int resetAll = -1;
         int aiType = 0;
+        int skill = -1;
+        String name = "";
 
         if (ip[0].equals("172") && ip[1].equals("16") && ip[2].equals("41")) {
             position = Integer.parseInt(ip[3]);
@@ -387,6 +390,12 @@ public class GameServer extends AbstractHandler {
                         else if (variable.equals("aitype")) {
                             aiType = Integer.parseInt(value);
                         }
+                        else if (variable.equals("skill")) {
+                            skill = Integer.parseInt(value);
+                        }
+                        else if (variable.equals("name")) {
+                            name = URLDecoder.decode(value, "UTF-8");
+                        }
 
                     }
 
@@ -403,7 +412,9 @@ public class GameServer extends AbstractHandler {
         if (method.equals("POST")) {
 
             if ( addEntity != -1) {
-                createEntity(position, addEntity, aiType);
+                ServerEntity e = createEntity(position, addEntity, aiType);
+                e.setName(name);
+                e.setSkill(skill);
             }
             else if (resetAll != -1) {
                 long t = System.currentTimeMillis() >> 8;

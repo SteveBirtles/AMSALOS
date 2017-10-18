@@ -8,6 +8,7 @@ public class ServerEntity extends ClientEntity {
     static int nextID = 1;
 
     public Random rnd;
+    public int skill = -1;
 
     private int aiType;
     private double healthScale;
@@ -64,6 +65,10 @@ public class ServerEntity extends ClientEntity {
 
     public int getAIType() { return this.aiType; }
     public void setAiType(int aiType) { this.aiType = aiType; }
+
+    public void setSkill(int skill) {
+        this.skill = skill;
+    }
 
     public void changeHealth(double hitPoints) {
         long last = 0;
@@ -207,7 +212,7 @@ public class ServerEntity extends ClientEntity {
                 int currentX = e.status.get(last).x;
                 int currentY = e.status.get(last).y;
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
-                    if (entityMap[currentX][currentY] != 0) {
+                    if (entityMap[currentX][currentY] != 0 && entityMap[currentX][currentY] <= 128) {
                         System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + last + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
                     } else {
                         entityMap[currentX][currentY] = (e.foe ? -1 : 1) * e.getId();
