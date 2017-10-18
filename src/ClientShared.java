@@ -143,7 +143,6 @@ public class ClientShared {
                                 int x = Integer.parseInt(entity.get("x").toString());
                                 int y = Integer.parseInt(entity.get("y").toString());
                                 double health = Double.parseDouble(entity.get("h").toString());
-                                int adjacentAttackers = Integer.parseInt(entity.get("a").toString());
                                 boolean foe = Boolean.parseBoolean(entity.get("f").toString());
                                 int target = Integer.parseInt(entity.get("z").toString());
                                 String name = entity.get("n").toString();
@@ -165,7 +164,7 @@ public class ClientShared {
 
                                     ClientEntity newE = new ClientEntity(id, type, foe);
 
-                                    newE.status.put(time, new EntityStatus(x, y, health, score, pause, target, adjacentAttackers));
+                                    newE.status.put(time, new EntityStatus(x, y, health, score, pause, target));
                                     newE.setName(name);
 
                                     entities.put(id, newE);

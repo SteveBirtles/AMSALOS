@@ -323,10 +323,7 @@ public class GamePlayer extends Application {
                         int x = (int) (4.0 * (x0 + offset * (x1 - x0)));
                         int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
 
-                        if (e.status.get(time).adjacentAttackers > 0) {
-                            gc.setFill(Color.RED);
-                        }
-                        else if (e.getType() > 128) {
+                        if (e.getType() > 128) {
                             gc.setFill(Color.DARKCYAN);
                         }
                         else if (e.getFoe()) {

@@ -16,6 +16,7 @@ public class ServerEntity extends ClientEntity {
     public int tombstoneAge;
     public int adjacentFriends;
     public int adjacentFoes;
+    public int adjacentAttackers;
 
     public ServerEntity(int type, double healthScale, boolean foe) {
         super(nextID, type, foe);
@@ -144,6 +145,16 @@ public class ServerEntity extends ClientEntity {
             int currentX = status.get(time).x;
             int currentY = status.get(time).y;
 
+            if (entityMap[currentX][currentY] != 0 &&
+                    Math.abs(entityMap[currentX][currentY]) != getId()) {
+                if (entityMap[currentX][currentY] > 0) {
+                    if (entityMap[currentX][currentY] <= 128)
+                        adjacentFriends++;
+                } else if (entityMap[currentX][currentY] < 0) {
+                    adjacentFoes++;
+                }
+            }
+
             if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
                     && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
                 if (entityMap[currentX - 1][currentY] > 0) {
@@ -185,7 +196,9 @@ public class ServerEntity extends ClientEntity {
             }
         }
 
-        status.get(time).adjacentAttackers = getFoe() ? adjacentFriends : adjacentFoes;
+        //System.out.println("Foes: " + adjacentFoes + " Friends: " + adjacentFriends);
+
+        adjacentAttackers = getFoe() ? adjacentFriends : adjacentFoes;
 
     }
 
@@ -193,31 +206,43 @@ public class ServerEntity extends ClientEntity {
 
     public static int[][] generateEntityMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups) {
 
+        ArrayList<Integer> entityDone = new ArrayList<>();
+
         int[][] entityMap = new int[GameServer.MAX_X][GameServer.MAX_Y];
 
         for (ClientEntity e: worldEntities) {
 
+            if (entityDone.contains(e.getId())) continue;
+
             if (ignorePowerups && e.getType() > 128) continue;
 
-            long last = 0;
-            for (long l: e.status.keySet()) {
-                if (l > last) last = l;
+            long time = 0;
+            for (long l : e.status.keySet()) {
+                if (l > time) time = l;
             }
 
-            if (e.status.get(last).health <= 0) continue;
+            if (!e.status.containsKey(time)) continue;
 
-            if (e.status.containsKey(last)) {
-                int currentX = e.status.get(last).x;
-                int currentY = e.status.get(last).y;
+            if (e.status.get(time).health <= 0) continue;
+
+            //System.out.print("Entity " + e.getId() + " is foe? " + e.getFoe() + " : ");
+
+            if (e.status.containsKey(time)) {
+                int currentX = e.status.get(time).x;
+                int currentY = e.status.get(time).y;
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
                     if (entityMap[currentX][currentY] != 0) {
-                        System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + last + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
-                    } else {
-                        entityMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
+                        System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + time + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
                     }
+                    //System.out.println((e.getFoe() ? -1 : 1) * e.getId());
+                    if (entityMap[currentX][currentY] == 0) {
+                        entityMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
+                        entityDone.add(e.getId());
+                    }
+                } else {
+                    //System.out.println();
                 }
             }
-
         }
 
         return entityMap;

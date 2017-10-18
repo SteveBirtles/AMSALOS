@@ -5,16 +5,14 @@ public class EntityStatus {
     public int score;
     public int pause;
     public int targetEntity;
-    public int adjacentAttackers;
 
-    public EntityStatus(int x, int y, double health, int score, int pause, int targetEntity, int adjacentAttackers) {
+    public EntityStatus(int x, int y, double health, int score, int pause, int targetEntity) {
         this.x = x;
         this.y = y;
         this.health = health;
         this.score = score;
         this.pause = pause;
         this.targetEntity = targetEntity;
-        this.adjacentAttackers = adjacentAttackers;
     }
 
     public EntityStatus(int x, int y, EntityStatus previous) {
@@ -24,7 +22,6 @@ public class EntityStatus {
         this.score = previous.score;
         this.pause = previous.pause;
         this.targetEntity = previous.targetEntity;
-        this.adjacentAttackers = previous.adjacentAttackers;
     }
 
 }

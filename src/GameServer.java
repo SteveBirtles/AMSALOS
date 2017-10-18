@@ -104,87 +104,13 @@ public class GameServer extends AbstractHandler {
 
             synchronized (worldEntities) {
 
-                for (ServerEntity e: worldEntities) {
-
-                    if (e.getType() >= 128) continue;
-
-                    long last = 0;
-                    for (long l: e.status.keySet()) {
-                        if (l > last) last = l;
-                    }
-
-                    if (e.tombstoneAge > 40) expired.add(e);
-
-                    if (e.status.get(last).health > 0) {
-                        for (ServerEntity e2: worldEntities) {
-
-                            if (e.getId() == e2.getId()) continue;
-
-                            if (e.getType() <= 16 && e2.getType() > 128) {
-                                long last2 = 0;
-                                for (long l: e.status.keySet()) {
-                                    if (l > last2) last2 = l;
-                                }
-
-                                if (e.status.keySet().contains(last) && e2.status.keySet().contains(last2)) {
-                                    if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
-                                        expired.add(e2);
-                                        e.status.get(last).score += 10;
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-
-                    if (e.status.get(last).targetEntity > 0 && e.status.get(last).health > 0) {
-                        for (ServerEntity e2: worldEntities) {
-
-                            if (e2.getId() == e.status.get(last).targetEntity) {
-                                if (e.status.get(last).health <= 0) {
-                                    e.status.get(last).targetEntity = 0;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (expired.size() > 0) {
-                    worldEntities.removeAll(expired);
-                }
-
-                long time = future;
-
                 int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true);
 
-                for (ServerEntity e: worldEntities) {
-
-                    if (e.getType() >= 128) continue;
-
-                    if (!e.status.containsKey(time)) continue;
-
-                    if (e.status.get(time).health > 0) {
-                        e.calculateAdjacentEntities(entityMap);
-                        e.changeHealth(-e.status.get(time).adjacentAttackers);
-
-                        if (e.status.get(time).health <= 0) {
-                            e.status.get(time).pause = 0;
-                            ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
-                            for (ServerEntity e2: worldEntities) {
-                                if (attackers.contains(e2.getId())) {
-                                    e2.status.get(time).score += 100;
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                for (ServerEntity e: worldEntities) {
+                for (ServerEntity e : worldEntities) {
 
                     long first = future;
                     long last = 0;
-                    for (long l: e.status.keySet()) {
+                    for (long l : e.status.keySet()) {
                         if (l > last) last = l;
                         if (l < first) first = l;
                     }
@@ -201,7 +127,7 @@ public class GameServer extends AbstractHandler {
                             if (e.getFoe()) e.tombstoneAge++;
                             e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
 
-                        } else if (e.status.get(last).adjacentAttackers > 0) {
+                        } else if (e.adjacentAttackers > 0) {
 
                             e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
                             e.status.get(future).pause = 0;
@@ -255,8 +181,11 @@ public class GameServer extends AbstractHandler {
 
                                 case 3:
 
-                                    if (e.status.get(last).pause == 1) { e.status.get(last).pause = 2; }
-                                    else { e.status.get(last).pause = 1; }
+                                    if (e.status.get(last).pause == 1) {
+                                        e.status.get(last).pause = 2;
+                                    } else {
+                                        e.status.get(last).pause = 1;
+                                    }
 
                                     if (e.status.get(last).pause == 1) {
                                         target = Wanderer.calculateNext(e, vicinity);
@@ -320,14 +249,102 @@ public class GameServer extends AbstractHandler {
                             }
 
                         }
+
+                        if (first <= past) {
+
+                            e.status.remove(first);
+
+                        }
+                    }
+                }
+
+                entityMap = ServerEntity.generateEntityMap(worldEntities, true);
+
+                for (ServerEntity e : worldEntities) {
+
+                    if (e.getType() >= 128) continue;
+
+                    if (e.tombstoneAge > 40) {
+                        expired.add(e);
+                        continue;
                     }
 
-                    if (first <= past) {
+                    long last = 0;
+                    for (long l : e.status.keySet()) {
+                        if (l > last) last = l;
+                    }
 
-                        e.status.remove(first);
+                    if (e.status.get(last).health > 0) {
+                        for (ServerEntity e2 : worldEntities) {
+
+                            if (e.getId() == e2.getId()) continue;
+
+                            if (e.getType() <= 16 && e2.getType() > 128) {
+                                long last2 = 0;
+                                for (long l : e.status.keySet()) {
+                                    if (l > last2) last2 = l;
+                                }
+
+                                if (e.status.keySet().contains(last) && e2.status.keySet().contains(last2)) {
+                                    if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
+                                        expired.add(e2);
+                                        e.status.get(last).score += 10;
+                                    }
+                                }
+                            }
+
+                        }
+
+                        if (e.status.get(last).targetEntity > 0) {
+                            for (ServerEntity e2 : worldEntities) {
+
+                                if (e2.getId() == e.status.get(last).targetEntity) {
+                                    if (e.status.get(last).health <= 0) {
+                                        e.status.get(last).targetEntity = 0;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (expired.size() > 0) {
+                    worldEntities.removeAll(expired);
+                }
+
+
+                for (ServerEntity e : worldEntities) {
+
+                    if (e.getType() >= 128) continue;
+
+                    long time = future;
+
+                    if (!e.status.containsKey(time)) continue;
+
+                    if (e.status.get(time).health > 0) {
+                        e.calculateAdjacentEntities(entityMap);
+
+                        if (e.getFoe()) {
+                            //System.out.println("Hurting foe: " + (-e.adjacentAttackers));
+                            e.changeHealth(-e.adjacentAttackers);
+                        } else {
+                            //System.out.println("Hurting friend: " + (-e.adjacentAttackers));
+                            e.changeHealth(-e.adjacentAttackers);
+                        }
+
+                        if (e.status.get(time).health <= 0) {
+                            e.status.get(time).pause = 0;
+                            ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
+                            for (ServerEntity e2 : worldEntities) {
+                                if (attackers.contains(e2.getId())) {
+                                    e2.status.get(time).score += 100;
+                                }
+                            }
+                        }
 
                     }
                 }
+
             }
 
         }
@@ -471,7 +488,6 @@ public class GameServer extends AbstractHandler {
                                 else {
                                     entity.put("h", (double) (-e.tombstoneAge) / (TOMBSTONE_LIFETIME) );
                                 }
-                                entity.put("a", e.status.get(t).adjacentAttackers);
                                 entity.put("x", x);
                                 entity.put("y", y);
                                 entity.put("f", Boolean.toString(e.getFoe()));
@@ -557,7 +573,7 @@ public class GameServer extends AbstractHandler {
                 return null;
             }
 
-            newE.status.put(t, new EntityStatus(x, y, 1, 0, 0, 0, 0));
+            newE.status.put(t, new EntityStatus(x, y, 1, 0, 0, 0));
 
             boolean[] clearDirections = new boolean[4];
             clearDirections[0] = y > 0 && map[x][y - 1] % 256 < 128;
