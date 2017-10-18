@@ -274,7 +274,7 @@ public class GameClient extends Application {
                                 gc.setEffect(null);
                             }
 
-                            if (layer == 2) {
+                            if (layer == 1) {
 
                                 for (long timeywimey : e.status.keySet()) {
 
