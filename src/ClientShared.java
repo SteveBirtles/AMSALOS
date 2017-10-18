@@ -43,7 +43,7 @@ public class ClientShared {
         }
     }
 
-    public static int[][] getUpdate(String serverAddress, int[][] map, int screen, ArrayList<ClientEntity> currentEntities) {
+    public static int[][] getUpdate(String serverAddress, int[][] map, int screen, boolean isPlayer, ArrayList<ClientEntity> currentEntities) {
 
         long clientTime = System.currentTimeMillis() >> 8;
         HashMap<Integer, ClientEntity> entities = new HashMap<>();
@@ -54,7 +54,7 @@ public class ClientShared {
         try {
             url = new URL( "http://" + serverAddress + ":8081"
                     + "?index=" + clientTime
-                    + "&player=" + (screen == 0 ? "true" : "false")
+                    + "&player=" + Boolean.toString(isPlayer)
                     + "&mapTimeStamp=" + mapTimeStamp
                     + "&map=" + (map == null ? "true" : "false")
                     + (screen > 0 ? "&screen=" + screen : ""));

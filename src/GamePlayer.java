@@ -270,7 +270,7 @@ public class GamePlayer extends Application {
 
         Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(256),
-                ae -> map = ClientShared.getUpdate(serverAddress, map, 0, currentEntities)));
+                ae -> map = ClientShared.getUpdate(serverAddress, map, 0, true, currentEntities)));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 

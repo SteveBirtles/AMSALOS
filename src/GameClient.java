@@ -332,7 +332,7 @@ public class GameClient extends Application {
     }
 
     private static void getUpdate() {
-        map = ClientShared.getUpdate(serverAddress, map, screen, currentEntities);
+        map = ClientShared.getUpdate(serverAddress, map, screen, false, currentEntities);
         justUpdated = true;
 
         /*for (ClientEntity e : currentEntities) {
