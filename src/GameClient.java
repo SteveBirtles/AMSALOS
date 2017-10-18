@@ -228,7 +228,7 @@ public class GameClient extends Application {
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
                                 }
                                 else if (layer == 1) {
-                                    if (!e.foe) gc.setEffect(friendly);
+                                    if (!e.getFoe()) gc.setEffect(friendly);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
                                     gc.setEffect(null);
 
@@ -247,7 +247,11 @@ public class GameClient extends Application {
                                     gc.setGlobalAlpha(1.0);
                                 }
 
-                                if (layer < 2 && !e.foe && !e.getName().equals("")) {
+                                gc.setFill(Color.rgb(0, 0, 64));
+                                gc.setFont(nameFont);
+                                gc.fillText(Long.toString(time), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 20);
+
+                                if (layer < 2 && !e.getFoe() && !e.getName().equals("")) {
                                     if (layer == 1) {
                                         gc.setFill(Color.rgb(255, 255, 255 ));
                                     } else {

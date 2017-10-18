@@ -2,9 +2,9 @@ import java.util.HashMap;
 
 public class ClientEntity {
 
-    int id;
-    int type;
-    boolean foe;
+    private int id;
+    private int type;
+    private boolean foe;
     private String name;
 
     public HashMap<Long, EntityStatus> status;

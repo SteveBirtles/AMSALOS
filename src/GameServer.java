@@ -67,8 +67,17 @@ public class GameServer extends AbstractHandler {
 
             switch (goodOrBad) {
                 case 0:
-                    if (powerUpCount < MAX_POWERUPS) {
-                        createEntity(screen, rnd.nextInt(9) + 129, 0);
+
+                    if (rnd.nextInt(10) == 0) {
+                        if (playerCount < MAX_PLAYERS) {
+                            ServerEntity e = createEntity(screen, rnd.nextInt(4) + 1, 4);
+                            e.setName(Steve.QuickNameMaker.next(rnd));
+                        }
+                    }
+                    else {
+                        if (powerUpCount < MAX_POWERUPS) {
+                            createEntity(screen, rnd.nextInt(9) + 129, 0);
+                        }
                     }
                     break;
                 case 1:
@@ -181,7 +190,7 @@ public class GameServer extends AbstractHandler {
 
                         if (e.status.get(last).health == 0) {
 
-                            if (e.foe) e.tombstoneAge++;
+                            if (e.getFoe()) e.tombstoneAge++;
                             e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
 
                         } else if (e.status.get(last).adjacentAttackers > 0) {
@@ -298,7 +307,7 @@ public class GameServer extends AbstractHandler {
                                         e.status.get(future).pause = 0;
                                     } else {
                                         e.status.put(future, new EntityStatus(target.x, target.y, e.status.get(last)));
-                                        entityMap[target.x][target.y] = (e.foe ? -1 : 1) * e.getId();
+                                        entityMap[target.x][target.y] = (e.getFoe() ? -1 : 1) * e.getId();
                                     }
                                 }
                             }
@@ -520,7 +529,7 @@ public class GameServer extends AbstractHandler {
 
             int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, false);
 
-            boolean foe = type >= 17 && type <= 32;
+            boolean foe = (type >= 17 && type <= 32);
 
             newE = new ServerEntity(type, foe ? 10 : 250, foe);
             newE.setAiType(aiType);

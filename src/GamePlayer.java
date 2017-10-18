@@ -331,7 +331,7 @@ public class GamePlayer extends Application {
                         else if (e.getType() > 128) {
                             gc.setFill(Color.DARKCYAN);
                         }
-                        else if (e.foe) {
+                        else if (e.getFoe()) {
                             gc.setFill(Color.DARKGOLDENROD);
                         }
                         else {

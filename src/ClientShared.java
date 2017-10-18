@@ -165,7 +165,7 @@ public class ClientShared {
 
                                     ClientEntity newE = new ClientEntity(id, type, foe);
 
-                                    newE.status.put(time, new EntityStatus(x, y, health, score, 0, 0, adjacentAttackers));
+                                    newE.status.put(time, new EntityStatus(x, y, health, score, pause, target, adjacentAttackers));
                                     newE.setName(name);
 
                                     entities.put(id, newE);
