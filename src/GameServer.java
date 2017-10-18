@@ -115,7 +115,7 @@ public class GameServer extends AbstractHandler {
                                     if (l > last2) last2 = l;
                                 }
                                 if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
-                                    expired.add(e2);
+                                    //expired.add(e2);
                                     e.status.get(last).score += 10;
                                 }
                             }
