@@ -13,7 +13,7 @@ import java.util.*;
 
 public class GameServer extends AbstractHandler {
 
-    public final static boolean debug = true;
+    public final static boolean debug = false;
 
     public final static ArrayList<ServerEntity> worldEntities = new ArrayList<>();
     public final static int MAX_X = 401;
@@ -324,7 +324,7 @@ public class GameServer extends AbstractHandler {
                         e.calculateAdjacentEntities(attackMap);
 
                         if (e.getFoe()) {
-                            //System.out.println("Hurting foe: " + (-e.adjacentAttackers));
+                            System.out.println("Hurting foe: " + (-e.adjacentAttackers));
                             e.changeHealth(-e.adjacentAttackers);
                         } else {
                             //System.out.println("Hurting friend: " + (-e.adjacentAttackers));

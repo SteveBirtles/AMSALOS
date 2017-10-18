@@ -148,9 +148,11 @@ public class ServerEntity extends ClientEntity {
             if (entityMap[currentX][currentY] != 0 &&
                     Math.abs(entityMap[currentX][currentY]) != getId()) {
                 if (entityMap[currentX][currentY] > 0) {
-                    if (entityMap[currentX][currentY] <= 128)
+                    if (entityMap[currentX][currentY] <= 128) {
                         adjacentFriends++;
+                    }
                 } else if (entityMap[currentX][currentY] < 0) {
+                    System.out.println("adjacentFoes++");
                     adjacentFoes++;
                 }
             }
@@ -203,14 +205,16 @@ public class ServerEntity extends ClientEntity {
     }
 
 
-
+    @SuppressWarnings("Duplicates")
     public static int[][] generateAttackMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups, long first, long last) {
 
         ArrayList<Integer> entityDone = new ArrayList<>();
 
         int[][] entityMap = new int[GameServer.MAX_X][GameServer.MAX_Y];
 
-        for (long time = first; time <= last; time++) {
+        long time = last;
+
+        //for (long time = first; time <= last; time++) {
 
             for (int enemy = 0; enemy < 2; enemy++) {
 
@@ -246,21 +250,22 @@ public class ServerEntity extends ClientEntity {
                         }
                     }
                 }
-            }
+            //}
         }
 
         return entityMap;
     }
 
+    @SuppressWarnings("Duplicates")
     public static int[][] generateCollisionMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups) {
 
-        ArrayList<Integer> entityDone = new ArrayList<>();
+        //ArrayList<Integer> entityDone = new ArrayList<>();
 
         int[][] collisionMap = new int[GameServer.MAX_X][GameServer.MAX_Y];
 
         for (ClientEntity e : worldEntities) {
 
-            if (entityDone.contains(e.getId())) continue;
+            //if (entityDone.contains(e.getId())) continue;
 
             if (ignorePowerups && e.getType() > 128) continue;
 
@@ -281,7 +286,7 @@ public class ServerEntity extends ClientEntity {
                     }
                     if (collisionMap[currentX][currentY] == 0) {
                         collisionMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
-                        entityDone.add(e.getId());
+                        //entityDone.add(e.getId());
                     }
                 } else {
                 }
