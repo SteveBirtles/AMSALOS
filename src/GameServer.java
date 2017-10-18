@@ -104,7 +104,7 @@ public class GameServer extends AbstractHandler {
 
             synchronized (worldEntities) {
 
-                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true, present, future);
+                int entityMap[][] = ServerEntity.generateCollisionMap(worldEntities, true);
 
                 for (ServerEntity e : worldEntities) {
 
@@ -258,8 +258,6 @@ public class GameServer extends AbstractHandler {
                     }
                 }
 
-                entityMap = ServerEntity.generateEntityMap(worldEntities, true, present, future);
-
                 for (ServerEntity e : worldEntities) {
 
                     if (e.getType() >= 128) continue;
@@ -312,6 +310,7 @@ public class GameServer extends AbstractHandler {
                     worldEntities.removeAll(expired);
                 }
 
+                int[][] attackMap = ServerEntity.generateAttackMap(worldEntities, true, present, future);
 
                 for (ServerEntity e : worldEntities) {
 
@@ -322,7 +321,7 @@ public class GameServer extends AbstractHandler {
                     if (!e.status.containsKey(time)) continue;
 
                     if (e.status.get(time).health > 0) {
-                        e.calculateAdjacentEntities(entityMap);
+                        e.calculateAdjacentEntities(attackMap);
 
                         if (e.getFoe()) {
                             //System.out.println("Hurting foe: " + (-e.adjacentAttackers));
@@ -550,7 +549,7 @@ public class GameServer extends AbstractHandler {
 
         synchronized (worldEntities) {
 
-            int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, false, t, t);
+            int entityMap[][] = ServerEntity.generateCollisionMap(worldEntities, false);
 
             boolean foe = (type >= 17 && type <= 32);
 
