@@ -65,8 +65,8 @@ public class GamePlayer extends Application {
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.equals("comp1-reg")) {
-                //serverAddress = "services.farnborough.ac.uk";
-                fullscreen = false;
+                serverAddress = "services.farnborough.ac.uk";
+                //fullscreen = false;
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
