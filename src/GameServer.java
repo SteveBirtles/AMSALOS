@@ -114,8 +114,11 @@ public class GameServer extends AbstractHandler {
                     }
 
                     if (e.tombstoneAge > 40) expired.add(e);
-                    if (e.status.get(last).targetEntity > 0 && e.status.get(last).health > 0) {
+
+                    if (e.status.get(last).health > 0) {
                         for (ServerEntity e2: worldEntities) {
+
+                            if (e.getId() == e2.getId()) continue;
 
                             if (e.getType() <= 16 && e2.getType() > 128) {
                                 long last2 = 0;
@@ -131,6 +134,12 @@ public class GameServer extends AbstractHandler {
                                 }
                             }
 
+                        }
+                    }
+
+                    if (e.status.get(last).targetEntity > 0 && e.status.get(last).health > 0) {
+                        for (ServerEntity e2: worldEntities) {
+
                             if (e2.getId() == e.status.get(last).targetEntity) {
                                 if (e.status.get(last).health <= 0) {
                                     e.status.get(last).targetEntity = 0;
@@ -144,27 +153,26 @@ public class GameServer extends AbstractHandler {
                     worldEntities.removeAll(expired);
                 }
 
+                long time = future;
+
                 int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true);
 
                 for (ServerEntity e: worldEntities) {
 
                     if (e.getType() >= 128) continue;
 
-                    long last = 0;
-                    for (long l: e.status.keySet()) {
-                        if (l > last) last = l;
-                    }
+                    if (!e.status.containsKey(time)) continue;
 
-                    if (e.status.get(last).health > 0) {
-                        e.calculateAdjacentEntities(entityMap);
-                        e.changeHealth(-e.status.get(last).adjacentAttackers);
+                    if (e.status.get(time).health > 0) {
+                        e.calculateAdjacentEntities(entityMap, time);
+                        e.changeHealth(-e.status.get(time).adjacentAttackers);
 
-                        if (e.status.get(last).health <= 0) {
-                            e.status.get(last).pause = 0;
+                        if (e.status.get(time).health <= 0) {
+                            e.status.get(time).pause = 0;
                             ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
                             for (ServerEntity e2: worldEntities) {
                                 if (attackers.contains(e2.getId())) {
-                                    e2.status.get(last).score += 100;
+                                    e2.status.get(time).score += 100;
                                 }
                             }
                         }
@@ -302,7 +310,6 @@ public class GameServer extends AbstractHandler {
                             if (e.getAIType() == 3 || e.getAIType() == 4) {
                                 if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
                                     if (entityMap[target.x][target.y] != 0) {
-                                        //System.out.println("Avoiding collision " + e.getId() + " and " + entityMap[target.x][target.y]);
                                         e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
                                         e.status.get(future).pause = 0;
                                     } else {

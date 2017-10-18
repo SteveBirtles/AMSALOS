@@ -1,7 +1,5 @@
-import org.omg.PortableInterceptor.INACTIVE;
-
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class ServerEntity extends ClientEntity {
 
@@ -131,20 +129,15 @@ public class ServerEntity extends ClientEntity {
         return adjacentEntities;
     }
 
-    public void calculateAdjacentEntities(int[][] entityMap) {
-
-        long last = 0;
-        for (long l : status.keySet()) {
-            if (l > last) last = l;
-        }
+    public void calculateAdjacentEntities(int[][] entityMap, long time) {
 
         adjacentFriends = 0;
         adjacentFoes = 0;
 
-        if (status.containsKey(last)) {
+        if (status.containsKey(time)) {
 
-            int currentX = status.get(last).x;
-            int currentY = status.get(last).y;
+            int currentX = status.get(time).x;
+            int currentY = status.get(time).y;
 
             if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
                     && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
@@ -183,7 +176,7 @@ public class ServerEntity extends ClientEntity {
             }
         }
 
-        status.get(last).adjacentAttackers = getFoe() ? adjacentFriends : adjacentFoes;
+        status.get(time).adjacentAttackers = getFoe() ? adjacentFriends : adjacentFoes;
 
     }
 
@@ -197,14 +190,10 @@ public class ServerEntity extends ClientEntity {
 
             if (ignorePowerups && e.getType() > 128) continue;
 
-            ArrayList<Long> times = new ArrayList<>();
-
             long last = 0;
             for (long l: e.status.keySet()) {
-                times.add(l);
                 if (l > last) last = l;
             }
-            times.remove(last);
 
             if (e.status.get(last).health <= 0) continue;
 
