@@ -193,23 +193,20 @@ public class GameClient extends Application {
 
                         for (ClientEntity e : currentEntities) {
 
-                            if ((alive == 0 && e.getHealth() > 0) || (alive == 1 && e.getHealth() <= 0)) continue;
+                            if (!e.status.containsKey(time)) continue;
+
+                            if ((alive == 0 && e.status.get(time).health > 0) || (alive == 1 && e.status.get(time).health <= 0)) continue;
 
                             double offset = (System.currentTimeMillis() % 256) / 256.0;
 
-                            int x0 = -1;
-                            int y0 = -1;
                             int x1 = -1;
                             int y1 = -1;
 
-                            for (long t : e.xMap.keySet()) {
-                                if (t == time) {
-                                    x0 = e.xMap.get(t);
-                                    y0 = e.yMap.get(t);
-                                } else if (t == time + 1) {
-                                    x1 = e.xMap.get(t);
-                                    y1 = e.yMap.get(t);
-                                }
+                            int x0 = e.status.get(time).x;
+                            int y0 = e.status.get(time).y;
+                            if (e.status.containsKey(time + 1)) {
+                                x1 = e.status.get(time + 1).x;
+                                y1 = e.status.get(time + 1).y;
                             }
 
                             /*if (enableHalfSpeed && slowPoke.containsKey(e.getId()) && slowPoke.get(e.getId())) {
@@ -230,7 +227,7 @@ public class GameClient extends Application {
                                 }
                             }*/
 
-                            if (x0 != -1 && y0 != -1 && x1 != -1 && y1 != -1) {
+                            if (x1 != -1 && y1 != -1) {
                                 int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
                                 int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
                                 int column = (e.getType() - 1) % 16;
@@ -243,9 +240,9 @@ public class GameClient extends Application {
                                     gc.setEffect(null);
 
                                     gc.setFill(Color.rgb(0, 255, 0, 0.5));
-                                    gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.getHealth(), 10);
+                                    gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.status.get(time).health, 10);
                                     gc.setFill(Color.rgb(255, 0, 0, 0.5));
-                                    gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH + 64 * e.getHealth(), y - 20, 64 * (1 - e.getHealth()), 10);
+                                    gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH + 64 * e.status.get(time).health, y - 20, 64 * (1 - e.status.get(time).health), 10);
 
                                     /*if (e.targetEntity != 0) {
                                         for (ClientEntity et : currentEntities) {
@@ -284,7 +281,7 @@ public class GameClient extends Application {
                                 }
                                 else {
                                     gc.setEffect(dead);
-                                    double alpha = 1 + e.getHealth();
+                                    double alpha = 1 + e.status.get(time).health;
                                     if (alpha < 0) alpha = 0;
                                     gc.setGlobalAlpha(alpha);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
@@ -303,7 +300,7 @@ public class GameClient extends Application {
                                     gc.setFont(nameFont);
                                     gc.fillText(e.getName(), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 16*(1 + alive));
                                     gc.setFont(killFont);
-                                    gc.fillText(e.getKills() + " kills", x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y+72);
+                                    gc.fillText(e.status.get(time).kills + " kills", x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y+72);
                                 }
 
                                 gc.setEffect(null);

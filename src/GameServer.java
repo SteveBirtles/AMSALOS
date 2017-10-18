@@ -64,12 +64,17 @@ public class GameServer extends AbstractHandler {
             synchronized (worldEntities) {
 
                 for (ServerEntity e: worldEntities) {
+                    long last = 0;
+                    for (long l: e.status.keySet()) {
+                        if (l > last) last = l;
+                    }
+
                     if (e.tombstoneAge > 40) expired.add(e);
-                    if (e.targetEntity > 0 && e.getHealth() > 0) {
+                    if (e.status.get(last).targetEntity > 0 && e.status.get(last).health > 0) {
                         for (ServerEntity e2: worldEntities) {
-                            if (e2.getId() == e.targetEntity) {
-                                if (e2.health <= 0) {
-                                    e.targetEntity = 0;
+                            if (e2.getId() == e.status.get(last).targetEntity) {
+                                if (e.status.get(last).health <= 0) {
+                                    e.status.get(last).targetEntity = 0;
                                     break;
                                 }
                             }
@@ -82,16 +87,21 @@ public class GameServer extends AbstractHandler {
 
                 for (ServerEntity e: worldEntities) {
 
-                    if (e.getHealth() > 0) {
-                        e.calculateAdjacentEntities(entityMap);
-                        e.changeHealth(-e.getAdjacentAttackers());
+                    long last = 0;
+                    for (long l: e.status.keySet()) {
+                        if (l > last) last = l;
+                    }
 
-                        if (e.getHealth() <= 0) {
-                            e.setPause(0);
+                    if (e.status.get(last).health > 0) {
+                        e.calculateAdjacentEntities(entityMap);
+                        e.changeHealth(-e.status.get(last).adjacentAttackers);
+
+                        if (e.status.get(last).health <= 0) {
+                            e.status.get(last).pause = 0;
                             ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
                             for (ServerEntity e2: worldEntities) {
                                 if (attackers.contains(e2.getId())) {
-                                    e2.addKill();
+                                    e2.status.get(last).kills++;
                                 }
                             }
                         }
@@ -103,29 +113,27 @@ public class GameServer extends AbstractHandler {
 
                     long first = future;
                     long last = 0;
-                    for (long l: e.xMap.keySet()) {
+                    for (long l: e.status.keySet()) {
                         if (l > last) last = l;
                         if (l < first) first = l;
                     }
 
                     //System.out.println(e.getId() + " : " + (future - last));
 
-                    if (future != last && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
+                    if (future != last) {
 
-                        int currentX = e.xMap.get(last);
-                        int currentY = e.yMap.get(last);
+                        int currentX = e.status.get(last).x;
+                        int currentY = e.status.get(last).y;
 
-                        if (e.getHealth() == 0) {
+                        if (e.status.get(last).health == 0) {
 
                             if (e.foe) e.tombstoneAge++;
-                            e.xMap.put(future, currentX);
-                            e.yMap.put(future, currentY);
+                            e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
 
-                        } else if (e.adjacentAttackers > 0) {
+                        } else if (e.status.get(last).adjacentAttackers > 0) {
 
-                            e.setPause(0);
-                            e.xMap.put(future, currentX);
-                            e.yMap.put(future, currentY);
+                            e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
+                            e.status.get(future).pause = 0;
 
                         } else {
 
@@ -140,8 +148,8 @@ public class GameServer extends AbstractHandler {
 
                                     e.dx = 0;
                                     e.dy = 0;
-                                    e.xMap.put(future, currentX);
-                                    e.yMap.put(future, currentY);
+
+                                    e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
                                     break;
 
                                 case 1:
@@ -152,11 +160,11 @@ public class GameServer extends AbstractHandler {
                                     if (newX < 0 || newX >= MAX_X || map[newX][currentY] % 256 >= 128
                                             || (entityMap[newX][currentY] != 0 && entityMap[newX][currentY] != e.getId())) {
                                         e.dx = -e.dx;
-                                        e.xMap.put(future, currentX);
-                                    } else {
-                                        e.xMap.put(future, newX);
+                                        newX = currentX;
                                     }
-                                    e.yMap.put(future, currentY);
+
+                                    e.status.put(future, new EntityStatus(newX, currentY, e.status.get(last)));
+
                                     break;
 
                                 case 2:
@@ -167,19 +175,19 @@ public class GameServer extends AbstractHandler {
                                     if (newY < 0 || newY >= MAX_Y || map[currentX][newY] % 256 >= 128
                                             || (entityMap[currentX][newY] != 0 && entityMap[currentX][newY] != e.getId())) {
                                         e.dy = -e.dy;
-                                        e.xMap.put(future, currentY);
-                                    } else {
-                                        e.yMap.put(future, newY);
+                                        newY = currentY;
                                     }
-                                    e.xMap.put(future, currentX);
+
+                                    e.status.put(future, new EntityStatus(currentX, newY, e.status.get(last)));
+
                                     break;
 
                                 case 3:
 
-                                    if (e.getPause() == 1) { e.setPause(2); }
-                                    else {e.setPause(1); }
+                                    if (e.status.get(last).pause == 1) { e.status.get(last).pause = 2; }
+                                    else { e.status.get(last).pause = 1; }
 
-                                    if (e.getPause() == 1) {
+                                    if (e.status.get(last).pause == 1) {
                                         target = Wanderer.calculateNext(e, vicinity);
                                         target.x += currentX;
                                         target.y += currentY;
@@ -191,18 +199,18 @@ public class GameServer extends AbstractHandler {
 
                                 case 4:
 
-                                    e.setPause(0);
+                                    e.status.get(last).pause = 0;
 
-                                    if (e.targetEntity == 0) {
+                                    if (e.status.get(last).targetEntity == 0) {
                                         e.pickNextTarget(vicinity, entityMap, currentX, currentY);
                                     }
 
-                                    if (e.targetEntity != 0) {
+                                    if (e.status.get(last).targetEntity != 0) {
 
                                         XY targetEntity = null;
                                         for (int x = 0; x < MAX_X; x++) {
                                             for (int y = 0; y < MAX_Y; y++) {
-                                                if (Math.abs(entityMap[x][y]) == e.targetEntity) {
+                                                if (Math.abs(entityMap[x][y]) == e.status.get(last).targetEntity) {
                                                     targetEntity = new XY(x - currentX, y - currentY);
                                                     break;
                                                 }
@@ -214,11 +222,11 @@ public class GameServer extends AbstractHandler {
                                             target = Seeker.calculateNext(e, vicinity, targetEntity.x, targetEntity.y);
 
                                         } else {
-                                            e.targetEntity = 0;
+                                            e.status.get(last).targetEntity = 0;
                                         }
                                     }
 
-                                    if (e.targetEntity == 0) {
+                                    if (e.status.get(last).targetEntity == 0) {
                                         target = Wanderer.calculateNext(e, vicinity);
                                     }
 
@@ -232,12 +240,10 @@ public class GameServer extends AbstractHandler {
                                 if (target.x >= 0 && target.y >= 0 && target.x < MAX_X && target.y < MAX_Y) {
                                     if (entityMap[target.x][target.y] != 0) {
                                         //System.out.println("Avoiding collision " + e.getId() + " and " + entityMap[target.x][target.y]);
-                                        e.xMap.put(future, currentX);
-                                        e.yMap.put(future, currentY);
-                                        e.setPause(0);
+                                        e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
+                                        e.status.get(future).pause = 0;
                                     } else {
-                                        e.xMap.put(future, target.x);
-                                        e.yMap.put(future, target.y);
+                                        e.status.put(future, new EntityStatus(target.x, target.y, e.status.get(last)));
                                         entityMap[target.x][target.y] = (e.foe ? -1 : 1) * e.getId();
                                     }
                                 }
@@ -246,10 +252,10 @@ public class GameServer extends AbstractHandler {
                         }
                     }
 
-                    if (first <= past && e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
+                    if (first <= past) {
 
-                        e.xMap.remove(first);
-                        e.yMap.remove(first);
+                        e.status.remove(first);
+
                     }
                 }
             }
@@ -370,28 +376,28 @@ public class GameServer extends AbstractHandler {
 
                 synchronized (worldEntities) {
                     for (ServerEntity e : worldEntities) {
-                        if (e.xMap.containsKey(t)) {
-                            int x = e.xMap.get(t);
-                            int y = e.yMap.get(t);
+                        if (e.status.containsKey(t)) {
+                            int x = e.status.get(t).x;
+                            int y = e.status.get(t).y;
                             if (isPlayer || (x >= (position-1)*SCREEN_WIDTH - 2 && x <= position*SCREEN_WIDTH + 2)) {
                                 JSONObject entity = new JSONObject();
                                 entity.put("i", e.getId());
                                 entity.put("t", e.getType());
-                                if (e.getHealth() > 0) {
-                                    entity.put("h", e.getHealth());
+                                if (e.status.get(t).health > 0) {
+                                    entity.put("h", e.status.get(t).health);
                                 }
                                 else {
                                     entity.put("h", (double) (-e.tombstoneAge) / (TOMBSTONE_LIFETIME) );
                                 }
-                                entity.put("a", e.adjacentAttackers);
+                                entity.put("a", e.status.get(t).adjacentAttackers);
                                 entity.put("x", x);
                                 entity.put("y", y);
                                 entity.put("f", Boolean.toString(e.getFoe()));
-                                entity.put("z", Math.abs(e.targetEntity));
+                                entity.put("z", Math.abs(e.status.get(t).targetEntity));
 
                                 entity.put("n", e.getName());
-                                entity.put("k", e.getKills());
-                                entity.put("p", e.getPause());
+                                entity.put("k", e.status.get(t).kills);
+                                entity.put("p", e.status.get(t).pause);
 
                                 entities.add(entity);
                             }
@@ -469,8 +475,7 @@ public class GameServer extends AbstractHandler {
                 return null;
             }
 
-            newE.xMap.put(t, x);
-            newE.yMap.put(t, y);
+            newE.status.put(t, new EntityStatus(x, y, 1, 0, 0, 0, 0));
 
             boolean[] clearDirections = new boolean[4];
             clearDirections[0] = y > 0 && map[x][y - 1] % 256 < 128;

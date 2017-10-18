@@ -19,7 +19,7 @@ public class ServerEntity extends ClientEntity {
     public int adjacentFoes;
 
     public ServerEntity(int type, double healthScale, boolean foe) {
-        super(nextID, type, 1, 0, foe, 0);
+        super(nextID, type, foe);
         nextID++;
         this.aiType = 0;
         this.rnd = new Random(id);
@@ -48,11 +48,16 @@ public class ServerEntity extends ClientEntity {
             }
         }
 
+        long last = 0;
+        for (long l : status.keySet()) {
+            if (l > last) last = l;
+        }
+
         if (bestDistance < GameServer.VICINITY_SIZE) {
-            targetEntity = Math.abs(entityMap[currentX + endX - GameServer.VICINITY_CENTRE][currentY + endY - GameServer.VICINITY_CENTRE]);
+            status.get(last).targetEntity = Math.abs(entityMap[currentX + endX - GameServer.VICINITY_CENTRE][currentY + endY - GameServer.VICINITY_CENTRE]);
         }
         else {
-            targetEntity = 0;
+            status.get(last).targetEntity = 0;
         }
 
     }
@@ -61,8 +66,12 @@ public class ServerEntity extends ClientEntity {
     public void setAiType(int aiType) { this.aiType = aiType; }
 
     public void changeHealth(double hitPoints) {
-        health += hitPoints / healthScale;
-        if (health < 0) health = 0;
+        long last = 0;
+        for (long l : status.keySet()) {
+            if (l > last) last = l;
+        }
+        status.get(last).health += hitPoints / healthScale;
+        if (status.get(last).health < 0) status.get(last).health = 0;
     }
 
     public int[][] calculateVicinity(int currentX, int currentY, int[][] map, int[][] entityMap) {
@@ -94,17 +103,17 @@ public class ServerEntity extends ClientEntity {
     public ArrayList<Integer> listAdjacentEntities(ArrayList<ServerEntity> allEntities) {
         ArrayList<Integer> adjacentEntities = new ArrayList<>();
         long last = 0;
-        for (long l : xMap.keySet()) {
+        for (long l : status.keySet()) {
             if (l > last) last = l;
         }
-        if (xMap.containsKey(last) && yMap.containsKey(last)) {
-            int thisX = xMap.get(last);
-            int thisY = yMap.get(last);
+        if (status.containsKey(last)) {
+            int thisX = status.get(last).x;
+            int thisY = status.get(last).y;
             for (ServerEntity e : allEntities) {
                 if (e.getId() == getId()) continue;
-                if (e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
-                    int thatX = e.xMap.get(last);
-                    int thatY = e.yMap.get(last);
+                if (e.status.containsKey(last)) {
+                    int thatX = e.status.get(last).x;
+                    int thatY = e.status.get(last).y;
                     if (Math.abs(thisX - thatX) + Math.abs(thisY - thatY) == 1) {
                         adjacentEntities.add(e.getId());
                     }
@@ -115,18 +124,19 @@ public class ServerEntity extends ClientEntity {
     }
 
     public void calculateAdjacentEntities(int[][] entityMap) {
+
         long last = 0;
-        for (long l : xMap.keySet()) {
+        for (long l : status.keySet()) {
             if (l > last) last = l;
         }
 
         adjacentFriends = 0;
         adjacentFoes = 0;
 
-        if (xMap.containsKey(last) && yMap.containsKey(last)) {
+        if (status.containsKey(last)) {
 
-            int currentX = xMap.get(last);
-            int currentY = yMap.get(last);
+            int currentX = status.get(last).x;
+            int currentY = status.get(last).y;
 
             if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
                     && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
@@ -165,7 +175,7 @@ public class ServerEntity extends ClientEntity {
             }
         }
 
-        adjacentAttackers = foe ? adjacentFriends : adjacentFoes;
+        status.get(last).adjacentAttackers = foe ? adjacentFriends : adjacentFoes;
 
     }
 
@@ -177,20 +187,20 @@ public class ServerEntity extends ClientEntity {
 
         for (ClientEntity e: worldEntities) {
 
-            if (e.getHealth() <= 0) continue;
-
             ArrayList<Long> times = new ArrayList<>();
 
             long last = 0;
-            for (long l: e.xMap.keySet()) {
+            for (long l: e.status.keySet()) {
                 times.add(l);
                 if (l > last) last = l;
             }
             times.remove(last);
 
-            if (e.xMap.containsKey(last) && e.yMap.containsKey(last)) {
-                int currentX = e.xMap.get(last);
-                int currentY = e.yMap.get(last);
+            if (e.status.get(last).health <= 0) continue;
+
+            if (e.status.containsKey(last)) {
+                int currentX = e.status.get(last).x;
+                int currentY = e.status.get(last).y;
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
                     if (entityMap[currentX][currentY] != 0) {
                         System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + last + ": Entities " + e.getId() + " and " + entityMap[currentX][currentY] + ".");
