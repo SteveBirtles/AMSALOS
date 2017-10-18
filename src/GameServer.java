@@ -310,7 +310,8 @@ public class GameServer extends AbstractHandler {
                     worldEntities.removeAll(expired);
                 }
 
-                int[][] attackMap = ServerEntity.generateAttackMap(worldEntities, true, present, future);
+                //int[][] attackMap = ServerEntity.generateAttackMap(worldEntities, true, present, future);
+                int[][] attackMap = ServerEntity.generateCollisionMap(worldEntities, true);
 
                 for (ServerEntity e : worldEntities) {
 

@@ -151,7 +151,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX - 1][currentY] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX - 1][currentY] < 0) {
-                    System.out.println("adjacentFoes++");
+                    //System.out.println("adjacentFoes++ to left");
                     adjacentFoes++;
                 }
             }
@@ -162,7 +162,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX][currentY - 1] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX][currentY - 1] < 0) {
-                    System.out.println("adjacentFoes++");
+                    //System.out.println("adjacentFoes++ to up");
                     adjacentFoes++;
                 }
             }
@@ -173,7 +173,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX + 1][currentY] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX + 1][currentY] < 0) {
-                    System.out.println("adjacentFoes++");
+                    //System.out.println("adjacentFoes++ to right");
                     adjacentFoes++;
                 }
             }
@@ -184,7 +184,7 @@ public class ServerEntity extends ClientEntity {
                     if (entityMap[currentX][currentY + 1] <= 128)
                         adjacentFriends++;
                 } else if (entityMap[currentX][currentY + 1] < 0) {
-                    System.out.println("adjacentFoes++");
+                    //System.out.println("adjacentFoes++ to down");
                     adjacentFoes++;
                 }
             }
@@ -197,7 +197,7 @@ public class ServerEntity extends ClientEntity {
     }
 
 
-    @SuppressWarnings("Duplicates")
+    /*@SuppressWarnings("Duplicates")
     public static int[][] generateAttackMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups, long first, long last) {
 
         ArrayList<Integer> entityDone = new ArrayList<>();
@@ -246,7 +246,7 @@ public class ServerEntity extends ClientEntity {
         }
 
         return entityMap;
-    }
+    }*/
 
     @SuppressWarnings("Duplicates")
     public static int[][] generateCollisionMap(ArrayList<ServerEntity> worldEntities, boolean ignorePowerups) {

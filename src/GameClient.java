@@ -38,6 +38,8 @@ public class GameClient extends Application {
     public static boolean justUpdated =  false;
     //public static boolean enableHalfSpeed = false;
 
+    public static final boolean showTimeyWimey = false;
+
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
 
@@ -274,7 +276,7 @@ public class GameClient extends Application {
                                 gc.setEffect(null);
                             }
 
-                            if (layer == 1) {
+                            if (layer == 1 && showTimeyWimey) {
 
                                 for (long timeywimey : e.status.keySet()) {
 
