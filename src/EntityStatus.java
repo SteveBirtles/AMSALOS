@@ -2,16 +2,16 @@ public class EntityStatus {
     public int x;
     public int y;
     public double health;
-    public int kills;
+    public int score;
     public int pause;
     public int targetEntity;
     public int adjacentAttackers;
 
-    public EntityStatus(int x, int y, double health, int kills, int pause, int targetEntity, int adjacentAttackers) {
+    public EntityStatus(int x, int y, double health, int score, int pause, int targetEntity, int adjacentAttackers) {
         this.x = x;
         this.y = y;
         this.health = health;
-        this.kills = kills;
+        this.score = score;
         this.pause = pause;
         this.targetEntity = targetEntity;
         this.adjacentAttackers = adjacentAttackers;
@@ -21,7 +21,7 @@ public class EntityStatus {
         this.x = x;
         this.y = y;
         this.health = previous.health;
-        this.kills = previous.kills;
+        this.score = previous.score;
         this.pause = previous.pause;
         this.targetEntity = previous.targetEntity;
         this.adjacentAttackers = previous.adjacentAttackers;

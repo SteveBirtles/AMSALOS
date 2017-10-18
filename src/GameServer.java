@@ -36,16 +36,18 @@ public class GameServer extends AbstractHandler {
         public void run() {
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
-            int type;
-            if (rnd.nextInt(20) == 0) {
-                type = rnd.nextInt(4) + 1;
-            } else {
-                type = rnd.nextInt(12) + 5;
+
+            int goodOrBad = rnd.nextInt(2);
+
+            switch (goodOrBad) {
+                case 0:
+                    createEntity(screen, rnd.nextInt(9) + 129, 0);
+                    break;
+                case 1:
+                    createEntity(screen,  rnd.nextInt(12) + 17, 3);
+                    break;
             }
-            ServerEntity e = createEntity(screen, type, type <= 4 ? 4 : 3);
-            if (e != null && !e.foe) {
-                e.setName(QuickNameMaker.next(rnd));
-            }
+
         }
 
     }
@@ -64,6 +66,9 @@ public class GameServer extends AbstractHandler {
             synchronized (worldEntities) {
 
                 for (ServerEntity e: worldEntities) {
+
+                    if (e.getType() >= 128) continue;
+
                     long last = 0;
                     for (long l: e.status.keySet()) {
                         if (l > last) last = l;
@@ -83,9 +88,11 @@ public class GameServer extends AbstractHandler {
                 }
                 worldEntities.removeAll(expired);
 
-                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities);
+                int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true);
 
                 for (ServerEntity e: worldEntities) {
+
+                    if (e.getType() >= 128) continue;
 
                     long last = 0;
                     for (long l: e.status.keySet()) {
@@ -101,7 +108,7 @@ public class GameServer extends AbstractHandler {
                             ArrayList<Integer> attackers = e.listAdjacentEntities(worldEntities);
                             for (ServerEntity e2: worldEntities) {
                                 if (attackers.contains(e2.getId())) {
-                                    e2.status.get(last).kills++;
+                                    e2.status.get(last).score++;
                                 }
                             }
                         }
@@ -396,7 +403,7 @@ public class GameServer extends AbstractHandler {
                                 entity.put("z", Math.abs(e.status.get(t).targetEntity));
 
                                 entity.put("n", e.getName());
-                                entity.put("k", e.status.get(t).kills);
+                                entity.put("s", e.status.get(t).score);
                                 entity.put("p", e.status.get(t).pause);
 
                                 entities.add(entity);
@@ -452,9 +459,9 @@ public class GameServer extends AbstractHandler {
 
         synchronized (worldEntities) {
 
-            int entityMap[][] = ServerEntity.generateEntityMap(worldEntities);
+            int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, false);
 
-            boolean foe = type > 4;
+            boolean foe = type >= 17 && type <= 32;
 
             newE = new ServerEntity(type, foe ? 10 : 250, foe);
             newE.setAiType(aiType);

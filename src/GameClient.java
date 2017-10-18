@@ -189,13 +189,22 @@ public class GameClient extends Application {
 
                 synchronized (currentEntities) {
 
-                    for (int alive = 0; alive <= 1; alive++) {
+                    for (int fudge = 0; fudge <= 2; fudge++) {
+
+                        int layer = 0;
+                        switch (fudge) {
+                            case 1: layer = 2; break;
+                            case 2: layer = 1; break;
+                        }
 
                         for (ClientEntity e : currentEntities) {
 
                             if (!e.status.containsKey(time)) continue;
 
-                            if ((alive == 0 && e.status.get(time).health > 0) || (alive == 1 && e.status.get(time).health <= 0)) continue;
+                            if ((layer == 0 && e.status.get(time).health > 0) || (layer == 1 && e.status.get(time).health <= 0)) continue;
+
+                            if (layer < 2 && e.getType() > 128) continue;
+                            if (layer == 2 && e.getType() < 129) continue;
 
                             double offset = (System.currentTimeMillis() % 256) / 256.0;
 
@@ -209,74 +218,24 @@ public class GameClient extends Application {
                                 y1 = e.status.get(time + 1).y;
                             }
 
-                            /*if (enableHalfSpeed && slowPoke.containsKey(e.getId()) && slowPoke.get(e.getId())) {
-                                if (x0 == x1 && y0 == y1) {
-                                    if (e.getAdjacentAttackers() > 0) {
-                                        slowPoke.put(e.getId(), false);
-                                    }
-                                    else {
-                                        if (lastX0.containsKey(e.getId())) x0 = lastX0.get(e.getId());
-                                        if (lastY0.containsKey(e.getId())) y0 = lastY0.get(e.getId());
-                                        offset = (offset * 0.5) + 0.5;
-                                    }
-                                }
-                                else {
-                                    lastX0.put(e.getId(), x0);
-                                    lastY0.put(e.getId(), y0);
-                                    offset *= 0.5;
-                                }
-                            }*/
-
                             if (x1 != -1 && y1 != -1) {
                                 int x = (int) (64.0 * (x0 + offset * (x1 - x0))) - 32;
                                 int y = (int) (64.0 * (y0 + offset * (y1 - y0))) - 32;
                                 int column = (e.getType() - 1) % 16;
                                 int row = (e.getType() - 1) / 16;
 
-                                if (alive == 1) {
+                                if (layer == 2) {
+                                    gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
+                                }
+                                else if (layer == 1) {
                                     if (!e.foe) gc.setEffect(friendly);
                                     gc.drawImage(sprites, column * 64, row * 64, 64, 64, x - ClientShared.viewportPosition * WINDOW_WIDTH, y, 64, 64);
-
                                     gc.setEffect(null);
 
                                     gc.setFill(Color.rgb(0, 255, 0, 0.5));
                                     gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH, y - 20, 64 * e.status.get(time).health, 10);
                                     gc.setFill(Color.rgb(255, 0, 0, 0.5));
                                     gc.fillRect(x - ClientShared.viewportPosition * WINDOW_WIDTH + 64 * e.status.get(time).health, y - 20, 64 * (1 - e.status.get(time).health), 10);
-
-                                    /*if (e.targetEntity != 0) {
-                                        for (ClientEntity et : currentEntities) {
-                                            if (et.getId() == e.targetEntity) {
-
-                                                int x0b = -1;
-                                                int y0b = -1;
-                                                int x1b = -1;
-                                                int y1b = -1;
-
-                                                for (long t : et.xMap.keySet()) {
-                                                    if (t == time) {
-                                                        x0b = et.xMap.get(t);
-                                                        y0b = et.yMap.get(t);
-                                                    } else if (t == time + 1) {
-                                                        x1b = et.xMap.get(t);
-                                                        y1b = et.yMap.get(t);
-                                                    }
-                                                }
-
-                                                if (x0b != -1 && y0b != -1 && x1b != -1 && y1b != -1) {
-
-                                                    int xb = (int) (64.0 * (x0b + offset * (x1b - x0b))) - ClientShared.viewportPosition * WINDOW_WIDTH;
-                                                    int yb = (int) (64.0 * (y0b + offset * (y1b - y0b)));
-
-                                                    gc.setStroke(Color.rgb(255,0,0,0.5));
-                                                    gc.setLineWidth(3);
-                                                    gc.strokeLine(x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y + 32, xb, yb);
-
-                                                }
-
-                                            }
-                                        }
-                                    }*/
 
                                 }
                                 else {
@@ -288,8 +247,8 @@ public class GameClient extends Application {
                                     gc.setGlobalAlpha(1.0);
                                 }
 
-                                if (!e.foe && !e.getName().equals("")) {
-                                    if (alive == 1) {
+                                if (layer < 2 && !e.foe && !e.getName().equals("")) {
+                                    if (layer == 1) {
                                         gc.setFill(Color.rgb(255, 255, 255 ));
                                     } else {
                                         gc.setFill(Color.rgb(0, 0, 0));
@@ -298,9 +257,9 @@ public class GameClient extends Application {
                                     gc.setTextAlign(TextAlignment.CENTER);
                                     gc.setTextBaseline(VPos.CENTER);
                                     gc.setFont(nameFont);
-                                    gc.fillText(e.getName(), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 16*(1 + alive));
+                                    gc.fillText(e.getName(), x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y - 16*(1 + layer));
                                     gc.setFont(killFont);
-                                    gc.fillText(e.status.get(time).kills + " kills", x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y+72);
+                                    gc.fillText("Score: " + e.status.get(time).score, x + 32 - ClientShared.viewportPosition * WINDOW_WIDTH, y+72);
                                 }
 
                                 gc.setEffect(null);

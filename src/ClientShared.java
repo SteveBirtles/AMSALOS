@@ -147,7 +147,7 @@ public class ClientShared {
                                 boolean foe = Boolean.parseBoolean(entity.get("f").toString());
                                 int target = Integer.parseInt(entity.get("z").toString());
                                 String name = entity.get("n").toString();
-                                int kills = Integer.parseInt(entity.get("k").toString());
+                                int score = Integer.parseInt(entity.get("s").toString());
                                 int pause = Integer.parseInt(entity.get("p").toString());
 
                                 if (entities.containsKey(id)) {
@@ -165,7 +165,7 @@ public class ClientShared {
 
                                     ClientEntity newE = new ClientEntity(id, type, foe);
 
-                                    newE.status.put(time, new EntityStatus(x, y, health, kills, 0, 0, adjacentAttackers));
+                                    newE.status.put(time, new EntityStatus(x, y, health, score, 0, 0, adjacentAttackers));
                                     newE.setName(name);
 
                                     entities.put(id, newE);
