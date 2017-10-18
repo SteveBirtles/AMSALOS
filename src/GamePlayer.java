@@ -65,7 +65,8 @@ public class GamePlayer extends Application {
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.equals("comp1-reg")) {
-                serverAddress = "services.farnborough.ac.uk";
+                //serverAddress = "services.farnborough.ac.uk";
+                fullscreen = false;
             }
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -94,12 +95,11 @@ public class GamePlayer extends Application {
 
     public void addEntity(int screen) {
         String playerName = null;
-        try {
-            playerName = URLEncoder.encode(nameBox.getText(),"UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ClientShared.requestPost(serverAddress, "add=" + selectedEntity + "&screen=" + screen + "&aitype=4&name=" + playerName + "&skill=" + selectedSkill);
+        playerName = nameBox.getText();
+        playerName = playerName.replace(" ", "_");
+        String postString = "add=" + selectedEntity + "&screen=" + screen + "&aitype=4&name=" + playerName + "&skill=" + selectedSkill;
+        System.out.println(postString);
+        ClientShared.requestPost(serverAddress, postString);
     }
 
     @SuppressWarnings("Duplicates")

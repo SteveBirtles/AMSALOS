@@ -7,7 +7,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -114,9 +113,12 @@ public class GameServer extends AbstractHandler {
                                 for (long l: e.status.keySet()) {
                                     if (l > last2) last2 = l;
                                 }
-                                if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
-                                    //expired.add(e2);
-                                    e.status.get(last).score += 10;
+
+                                if (e.status.keySet().contains(last) && e2.status.keySet().contains(last2)) {
+                                    if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
+                                        expired.add(e2);
+                                        e.status.get(last).score += 10;
+                                    }
                                 }
                             }
 
@@ -129,7 +131,9 @@ public class GameServer extends AbstractHandler {
                         }
                     }
                 }
-                worldEntities.removeAll(expired);
+                if (expired.size() > 0) {
+                    worldEntities.removeAll(expired);
+                }
 
                 int entityMap[][] = ServerEntity.generateEntityMap(worldEntities, true);
 
@@ -349,6 +353,8 @@ public class GameServer extends AbstractHandler {
 
         if (request.getQueryString() != null) {
 
+            System.out.println(request.getQueryString());
+
             for (String q : request.getQueryString().split("&")) {
                 if (q.contains("=")) {
 
@@ -394,7 +400,7 @@ public class GameServer extends AbstractHandler {
                             skill = Integer.parseInt(value);
                         }
                         else if (variable.equals("name")) {
-                            name = URLDecoder.decode(value, "UTF-8");
+                            name = value.replace("_", " ");
                         }
 
                     }
