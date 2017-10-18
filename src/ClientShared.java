@@ -57,7 +57,7 @@ public class ClientShared {
                     + "&player=" + Boolean.toString(isPlayer)
                     + "&mapTimeStamp=" + mapTimeStamp
                     + "&map=" + (map == null ? "true" : "false")
-                    + (screen > 0 ? "&screen=" + screen : ""));
+                    + "&screen=" + screen);
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             int responseCode = 0;
@@ -88,7 +88,7 @@ public class ClientShared {
                     int maxX;
                     int maxY;
 
-                    if (screen == 0) {
+                    if (isPlayer) {
                         maxX = GameServer.MAX_X;
                         maxY = GameServer.MAX_Y;
                     } else {
