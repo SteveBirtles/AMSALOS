@@ -106,6 +106,7 @@ public class GameServer extends AbstractHandler {
             synchronized (worldEntities) {
 
                 int entityMap[][] = ServerEntity.generateCollisionMap(worldEntities, true);
+                int treasureMap[][] = ServerEntity.generateTreasureMap(worldEntities);
 
                 for (ServerEntity e : worldEntities) {
 
@@ -138,7 +139,7 @@ public class GameServer extends AbstractHandler {
                             int[][] vicinity = null;
                             XY target = null;
                             if (e.getAIType() > 2) {
-                                vicinity = e.calculateVicinity(currentX, currentY, map, entityMap);
+                                vicinity = e.calculateVicinity(currentX, currentY, map, entityMap, treasureMap);
                             }
 
                             switch (e.getAIType()) {
@@ -289,7 +290,7 @@ public class GameServer extends AbstractHandler {
                                 if (e.status.keySet().contains(last) && e2.status.keySet().contains(last2)) {
                                     if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
                                         expired.add(e2);
-                                        e.status.get(last).score += (e.getSkill() == 4 ? 20 : 10);
+                                        e.status.get(last).score += 10;
                                     }
                                 }
                             }

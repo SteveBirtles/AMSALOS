@@ -37,7 +37,7 @@ public class ServerEntity extends ClientEntity {
         for (int i = 0; i < GameServer.VICINITY_SIZE; i++) {
             for (int j = 0; j < GameServer.VICINITY_SIZE; j++) {
                 if (i == GameServer.VICINITY_CENTRE && j == GameServer.VICINITY_CENTRE) continue;
-                if (vicinity[i][j] == 3) {
+                if (vicinity[i][j] == 3 || (vicinity[i][j] == 4 && getType() == 4)) {
                     double distance = Math.abs(i - GameServer.VICINITY_CENTRE) + Math.abs(j - GameServer.VICINITY_CENTRE);
                     if (distance < bestDistance) {
                         bestDistance = distance;
@@ -80,7 +80,7 @@ public class ServerEntity extends ClientEntity {
         if (status.get(last).health < 0) status.get(last).health = 0;
     }
 
-    public int[][] calculateVicinity(int currentX, int currentY, int[][] map, int[][] entityMap) {
+    public int[][] calculateVicinity(int currentX, int currentY, int[][] map, int[][] entityMap, int[][] treasureMap) {
 
         int[][] vicinity = new int[GameServer.VICINITY_SIZE][GameServer.VICINITY_SIZE];
 
@@ -91,6 +91,8 @@ public class ServerEntity extends ClientEntity {
                 if (u >= 0 && v >= 0 && u < GameServer.MAX_X && v < GameServer.MAX_Y) {
                     if (map[u][v] % 256 >= 128) {
                         vicinity[i][j] = 1;
+                    } else if (entityMap[u][v] == 0 && treasureMap[u][v] > 0) {
+                        vicinity[i][j] = 4;
                     } else if (entityMap[u][v] != 0 && entityMap[u][v] != getId()) {
                         if (entityMap[u][v] > 0) {
                             vicinity[i][j] = 2;
@@ -98,7 +100,6 @@ public class ServerEntity extends ClientEntity {
                         else {
                             vicinity[i][j] = 3;
                         }
-
                     }
                 }
             }
@@ -228,6 +229,48 @@ public class ServerEntity extends ClientEntity {
         }
 
         return collisionMap;
+
+    }
+
+    public static int[][] generateTreasureMap(ArrayList<ServerEntity> worldEntities) {
+
+        int[][] treasureMap = new int[GameServer.MAX_X][GameServer.MAX_Y];
+
+        for (ClientEntity e : worldEntities) {
+
+            if (e.getType() <= 128) continue;
+
+            long time = 0;
+            for (long l : e.status.keySet()) {
+                if (l > time) time = l;
+            }
+
+            if (e.status.get(time).health <= 0) continue;
+
+            while (true) {
+
+                int currentX = e.status.get(time).x;
+                int currentY = e.status.get(time).y;
+                if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
+                    if (treasureMap[currentX][currentY] != 0) {
+                        long lastTime = time;
+                        time = 0;
+                        for (long l : e.status.keySet()) {
+                            if (l >= lastTime) continue;
+                            if (l > time) time = l;
+                        }
+                        if (time == 0) break;
+                        continue;
+                    }
+                    else {
+                        treasureMap[currentX][currentY] = e.getId();
+                        break;
+                    }
+                }
+            }
+        }
+
+        return treasureMap;
 
     }
 
