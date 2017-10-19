@@ -38,7 +38,7 @@ public class GameClient extends Application {
     public static boolean justUpdated =  false;
     //public static boolean enableHalfSpeed = false;
 
-    public static final boolean showTimeyWimey = false;
+    public static final boolean showTimeyWimey = true;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
