@@ -36,10 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 
 public class GamePlayer extends Application {
 
@@ -71,7 +68,7 @@ public class GamePlayer extends Application {
     public static final int WINDOW_HEIGHT = 1080;
     public static final int MAX_X = 401;
     public static final int MAX_Y = 17;
-    public static final int SPRITE_COUNT = 4;
+    public static final int SPRITE_COUNT = 5;
 
     static HashSet<KeyCode> keysPressed = new HashSet<>();
     static final ArrayList<ClientEntity> currentEntities = new ArrayList<>();
@@ -108,6 +105,12 @@ public class GamePlayer extends Application {
 
     public void setSelectedEntity(int number) {
         selectedEntity = number;
+        if (selectedEntity == 5) {
+            Random rnd = new Random(System.currentTimeMillis());
+            selectedEntity = rnd.nextInt(4) + 1;
+            setSelectedSkill(rnd.nextInt(4) + 1);
+            nameBox.setText(Steve.QuickNameMaker.next(rnd));
+        }
         if (selectedEntity == 0) {
             selectedEntityImageView.setViewport(new Rectangle2D(15 * 64, 0, 64, 64));
         } else {
@@ -310,7 +313,7 @@ public class GamePlayer extends Application {
             entityButton.setStyle(  "-fx-border-color: transparent;\n" +
                     "-fx-border-width: 0;\n" +
                     "-fx-background-radius: 0;\n" +
-                    "-fx-background-color: lightslategray;");
+                    "-fx-background-color: " + (i == 4 ? "#000022" : "lightslategray" )+ ";");
             final int entityNumber = i + 1;
             entityButton.setOnAction((ActionEvent e) -> setSelectedEntity(entityNumber));
             entityChooser.getChildren().add(entityButton);

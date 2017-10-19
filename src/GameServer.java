@@ -203,7 +203,7 @@ public class GameServer extends AbstractHandler {
                                     e.status.get(last).pause = 0;
 
                                     if (e.status.get(last).targetEntity == 0 || e.getSkill() == 2) {
-                                        if (e.getSkill() != 3 || (e.getSkill() == 3 && e.status.get(last).health > 0.2)) {
+                                        if (e.getSkill() != 3 || (e.getSkill() == 3 && e.status.get(last).health > 0.33)) {
                                             e.pickNextTarget(vicinity, entityMap, currentX, currentY);
                                         }
                                     }
