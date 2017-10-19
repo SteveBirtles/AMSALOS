@@ -14,6 +14,7 @@ import java.util.*;
 public class GameServer extends AbstractHandler {
 
     public final static boolean debug = false;
+    public final static boolean autoAddPlayers = false;
 
     public final static ArrayList<ServerEntity> worldEntities = new ArrayList<>();
     public final static int MAX_X = 401;
@@ -68,7 +69,7 @@ public class GameServer extends AbstractHandler {
             switch (goodOrBad) {
                 case 0:
 
-                    if (rnd.nextInt(10) == 0) {
+                    if (autoAddPlayers && rnd.nextInt(10) == 0) {
                         if (playerCount < MAX_PLAYERS) {
                             ServerEntity e = createEntity(screen, rnd.nextInt(4) + 1, 4);
                             e.setName(Steve.QuickNameMaker.next(rnd));
@@ -201,8 +202,10 @@ public class GameServer extends AbstractHandler {
 
                                     e.status.get(last).pause = 0;
 
-                                    if (e.status.get(last).targetEntity == 0) {
-                                        e.pickNextTarget(vicinity, entityMap, currentX, currentY);
+                                    if (e.status.get(last).targetEntity == 0 || e.getSkill() == 2) {
+                                        if (e.getSkill() != 3 || (e.getSkill() == 3 && e.status.get(last).health > 0.2)) {
+                                            e.pickNextTarget(vicinity, entityMap, currentX, currentY);
+                                        }
                                     }
 
                                     if (e.status.get(last).targetEntity != 0) {
@@ -286,7 +289,7 @@ public class GameServer extends AbstractHandler {
                                 if (e.status.keySet().contains(last) && e2.status.keySet().contains(last2)) {
                                     if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
                                         expired.add(e2);
-                                        e.status.get(last).score += 10;
+                                        e.status.get(last).score += (e.getSkill() == 4 ? 20 : 10);
                                     }
                                 }
                             }
@@ -554,7 +557,9 @@ public class GameServer extends AbstractHandler {
 
             boolean foe = (type >= 17 && type <= 32);
 
-            newE = new ServerEntity(type, foe ? 10 : 250, foe);
+            int healthBias = foe ? 10 : 250;
+
+            newE = new ServerEntity(type, healthBias, foe);
             newE.setAiType(aiType);
 
             int x, y, attempts = 0;

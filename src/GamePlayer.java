@@ -58,7 +58,7 @@ public class GamePlayer extends Application {
 
         @Override
         public String toString() {
-            return name + " - " + score + (alive ? "*" : "");
+            return name + "   " + score;
         }
 
         @Override
@@ -82,14 +82,15 @@ public class GamePlayer extends Application {
     public static int[][] map = null;
 
     public static ImageView selectedEntityImageView;
-    public static int selectedEntity = 1;
+    public static int selectedEntity = 0;
 
-    public static int selectedSkill = 1;
+    public static int selectedSkill = 0;
     public static String[] skillName = {"Resilience", "Offensive", "Defensive", "Greed"};
     public static Button[] skillButtons;
 
     public static TextField nameBox;
-    public static ListView<Score> highScoreList;
+    public static Label highScoreLabel[];
+    public static Label statsLabel[];
 
     public static void main(String[] args) {
         fullscreen = true;
@@ -107,7 +108,11 @@ public class GamePlayer extends Application {
 
     public void setSelectedEntity(int number) {
         selectedEntity = number;
-        selectedEntityImageView.setViewport(new Rectangle2D((selectedEntity-1)*64,0,64,64));
+        if (selectedEntity == 0) {
+            selectedEntityImageView.setViewport(new Rectangle2D(15 * 64, 0, 64, 64));
+        } else {
+            selectedEntityImageView.setViewport(new Rectangle2D((selectedEntity - 1) * 64, 0, 64, 64));
+        }
     }
 
     public void setSelectedSkill(int number) {
@@ -125,12 +130,16 @@ public class GamePlayer extends Application {
     }
 
     public void addEntity(int screen) {
+        if (nameBox.getText().equals("") || selectedEntity == 0 || selectedSkill == 0) return;
         String playerName = null;
         playerName = nameBox.getText();
         playerName = playerName.replace(" ", "_");
         String postString = "add=" + selectedEntity + "&screen=" + screen + "&aitype=4&name=" + playerName + "&skill=" + selectedSkill;
         System.out.println(postString);
         ClientShared.requestPost(serverAddress, postString);
+        nameBox.setText("");
+        setSelectedEntity(0);
+        setSelectedSkill(0);
     }
 
     @SuppressWarnings("Duplicates")
@@ -195,13 +204,76 @@ public class GamePlayer extends Application {
             screenButtons.getChildren().add(screenButton);
         }
 
-        HBox highScores = new HBox();
-        highScores.setPadding(new Insets(32));
+        highScoreLabel = new Label[11];
 
-        highScoreList = new ListView<>();
-        highScores.getChildren().add(highScoreList);
+        highScoreLabel[0] = new Label("High Scores:");
+        highScoreLabel[1] = new Label("...");
+        highScoreLabel[2] = new Label("...");
+        highScoreLabel[3] = new Label("...");
+        highScoreLabel[4] = new Label("...");
+        highScoreLabel[5] = new Label("...");
+        highScoreLabel[6] = new Label("...");
+        highScoreLabel[7] = new Label("...");
+        highScoreLabel[8] = new Label("...");
+        highScoreLabel[9] = new Label("...");
+        highScoreLabel[10] = new Label("...");
+
+        VBox highScores = new VBox(32);
+        highScores.setPadding(new Insets(32));
+        highScores.setAlignment(Pos.TOP_RIGHT);
+
+        highScoreLabel[0].setStyle("-fx-background-color: transparent;" +
+                "-fx-font-size: 24;" +
+                "-fx-font-family: monospace;" +
+                "-fx-font-weight: bold;" +
+                "-fx-text-fill: white;");
+
+        for (int s = 0; s < 11; s++) {
+            highScoreLabel[s].setTextAlignment(TextAlignment.RIGHT);
+            highScores.getChildren().add(highScoreLabel[s]);
+        }
+
+        highScores.setStyle("-fx-background-color: black");
+
         borderPane.setRight(highScores);
         borderPane.setAlignment(highScores, Pos.TOP_RIGHT);
+
+        VBox worldStats = new VBox(32);
+        worldStats.setPadding(new Insets(32));
+
+        statsLabel = new Label[11];
+
+        statsLabel[0] = new Label("World Statistics:");
+        statsLabel[1] = new Label("Player count");
+        statsLabel[2] = new Label("...");
+        statsLabel[3] = new Label("Enemy count");
+        statsLabel[4] = new Label("...");
+        statsLabel[5] = new Label("Treasure count");
+        statsLabel[6] = new Label("...");
+        statsLabel[7] = new Label("World age");
+        statsLabel[8] = new Label("...");
+        statsLabel[9] = new Label("World seed");
+        statsLabel[10] = new Label("...");
+
+        for (int s = 0; s < 11; s++) {
+            statsLabel[s].setPrefWidth(300);
+            String c = "white";
+            if (s > 0) {
+                if (s % 2 == 0) { c = "darkred"; }
+                else { c = "red"; }
+            }
+            statsLabel[s].setStyle("-fx-background-color: transparent;" +
+                    "-fx-font-size: 24;" +
+                    "-fx-font-family: monospace;" +
+                    "-fx-font-weight: bold;" +
+                    "-fx-text-fill: " + c + ";");
+            worldStats.getChildren().add(statsLabel[s]);
+        }
+
+        worldStats.setStyle("-fx-background-color: black");
+        borderPane.setLeft(worldStats);
+        borderPane.setAlignment(worldStats, Pos.TOP_LEFT);
+
 
         VBox miniMapHBox = new VBox();
         miniMapHBox.setSpacing(5);
@@ -217,42 +289,13 @@ public class GamePlayer extends Application {
         entityView.setPadding(new Insets(32));
         entityView.setAlignment(Pos.BOTTOM_CENTER);
 
-        HBox nameChooser = new HBox(32);
-        nameChooser.setPrefWidth(700);
-        nameChooser.setAlignment(Pos.CENTER);
-        Label nameLabel = new Label("Player name:");
-        nameLabel.setPrefWidth(200);
-        nameLabel.setTextAlignment(TextAlignment.RIGHT);
-        nameLabel.setStyle("-fx-border-color: transparent;\n" +
-                "-fx-border-width: 0;\n" +
-                "-fx-background-radius: 0;\n" +
-                "-fx-background-color: black;" +
-                "-fx-font-size: 24;" +
-                "-fx-font-family: monospace;" +
-                "-fx-font-weight: bold;" +
-                "-fx-text-fill: darkgrey;");
-        nameChooser.getChildren().add(nameLabel);
-
-        nameBox = new TextField();
-        nameBox.setPrefWidth(400);
-        nameBox.setStyle("-fx-border-color: transparent;\n" +
-                "-fx-border-width: 0;\n" +
-                "-fx-background-radius: 0;\n" +
-                "-fx-background-color: navy;" +
-                "-fx-font-size: 24;" +
-                "-fx-font-family: monospace;" +
-                "-fx-font-weight: bold;" +
-                "-fx-text-fill: white;");
-        nameChooser.getChildren().add(nameBox);
-        entityView.getChildren().add(nameChooser);
-
         selectedEntityImageView = new ImageView();
         selectedEntityImageView.setImage(sprites);
         selectedEntityImageView.setFitWidth(384);
         selectedEntityImageView.setFitHeight(384);
         DropShadow ds = new DropShadow( 64, Color.WHITE );
         selectedEntityImageView.setEffect(ds);
-        setSelectedEntity(1);
+        setSelectedEntity(0);
         entityView.getChildren().add(selectedEntityImageView);
 
         HBox entityChooser = new HBox();
@@ -275,6 +318,35 @@ public class GamePlayer extends Application {
         entityChooser.setMaxWidth(1604);
         entityChooser.setAlignment(Pos.CENTER);
         entityView.getChildren().add(entityChooser);
+
+        HBox nameChooser = new HBox();
+        nameChooser.setPrefWidth(700);
+        nameChooser.setAlignment(Pos.CENTER);
+        Label nameLabel = new Label("Player name:");
+        nameLabel.setPrefWidth(200);
+        nameLabel.setTextAlignment(TextAlignment.RIGHT);
+        nameLabel.setStyle("-fx-border-color: transparent;\n" +
+                "-fx-border-width: 0;\n" +
+                "-fx-background-radius: 0;\n" +
+                "-fx-background-color: black;" +
+                "-fx-font-size: 24;" +
+                "-fx-font-family: monospace;" +
+                "-fx-font-weight: bold;" +
+                "-fx-text-fill: white;");
+        nameChooser.getChildren().add(nameLabel);
+
+        nameBox = new TextField();
+        nameBox.setPrefWidth(400);
+        nameBox.setStyle("-fx-border-color: transparent;\n" +
+                "-fx-border-width: 0;\n" +
+                "-fx-background-radius: 0;\n" +
+                "-fx-background-color: navy;" +
+                "-fx-font-size: 24;" +
+                "-fx-font-family: monospace;" +
+                "-fx-font-weight: bold;" +
+                "-fx-text-fill: white;");
+        nameChooser.getChildren().add(nameBox);
+        entityView.getChildren().add(nameChooser);
 
         HBox skillChooser = new HBox();
         skillChooser.setSpacing(10);
@@ -365,13 +437,13 @@ public class GamePlayer extends Application {
                         int y = (int) (4.0 * (y0 + offset * (y1 - y0)));
 
                         if (e.getType() > 128) {
-                            gc.setFill(Color.DARKCYAN);
+                            gc.setFill(Color.DARKGREEN);
                         }
                         else if (e.getFoe()) {
-                            gc.setFill(Color.DARKGOLDENROD);
+                            gc.setFill(Color.RED);
                         }
                         else {
-                            gc.setFill(Color.LIMEGREEN);
+                            gc.setFill(Color.WHITE);
                         }
 
                         gc.fillRect(x, y, 4, 4);
@@ -391,6 +463,7 @@ public class GamePlayer extends Application {
     }
 
     public static void update() {
+
         map = ClientShared.getUpdate(serverAddress, map, 0, true, currentEntities);
         ArrayList<Score> currentHighScores = new ArrayList<>();
         for (ClientEntity e: currentEntities) {
@@ -402,8 +475,60 @@ public class GamePlayer extends Application {
                 currentHighScores.add(new Score(e.status.get(last).score, e.getName(), e.status.get(last).health > 0));
             }
         }
-        Collections.sort(currentHighScores, new Score());
-        highScoreList.setItems(FXCollections.observableArrayList(currentHighScores));
+        currentHighScores.sort(new Score());
+
+        for (int s = 1; s <= 10; s++) {
+            if (s <= currentHighScores.size()) {
+                if (currentHighScores.get(s - 1).alive) {
+                    highScoreLabel[s].setStyle("-fx-background-color: transparent;" +
+                            "-fx-font-size: 24;" +
+                            "-fx-font-family: Arial;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-text-fill: yellow;");
+                } else {
+                    highScoreLabel[s].setStyle("-fx-background-color: transparent;" +
+                            "-fx-font-size: 24;" +
+                            "-fx-font-family: Arial;" +
+                            "-fx-font-weight: normal;" +
+                            "-fx-text-fill: darkgoldenrod;");
+                }
+                highScoreLabel[s].setText(currentHighScores.get(s - 1).toString());
+            }
+            else {
+                highScoreLabel[s].setText("");
+            }
+        }
+
+        int enemyCount = 0;
+        int treasureCount = 0;
+        int playerCount = 0;
+
+        for (ClientEntity e: currentEntities) {
+            long last = 0;
+            for (long l : e.status.keySet()) {
+                if (l > last) last = l;
+            }
+            if (e.getType() > 128) {
+                treasureCount++;
+            } else if (e.status.get(last).health > 0) {
+                if (e.getType() < 16) {
+                    playerCount++;
+                } else {
+                    enemyCount++;
+                }
+            }
+        }
+
+        long mapLifetime = (System.currentTimeMillis() >> 8) - ClientShared.mapTimeStamp;
+
+        statsLabel[2].setText(Integer.toString(playerCount));
+        statsLabel[4].setText(Integer.toString(enemyCount));
+        statsLabel[6].setText(Integer.toString(treasureCount));
+        int seconds = Math.floorDiv((int) mapLifetime, 4) % 60;
+        int minutes = Math.floorDiv((int) mapLifetime, 60*4);
+        statsLabel[8].setText(Integer.toString(minutes) + (seconds < 10 ? ":0" : ":") + Integer.toString(seconds));
+        statsLabel[10].setText(Long.toString(ClientShared.mapTimeStamp));
+
     }
 
 }

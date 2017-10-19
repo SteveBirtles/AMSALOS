@@ -15,8 +15,6 @@ public class Seeker {
         int startX = GameServer.VICINITY_CENTRE;
         int startY = GameServer.VICINITY_CENTRE;
 
-        //System.out.println(startX + ", " + startY + " -> " + endX + ", " + endY);
-
         ArrayList<XY> closedSet = new ArrayList<>();
         ArrayList<XY> openSet = new ArrayList<>();
         HashMap<XY, XY> cameFrom = new HashMap<>();
@@ -60,8 +58,6 @@ public class Seeker {
 
                 ArrayList<XY> path = new ArrayList<>();
 
-                //System.out.println("CameFrom: " + cameFrom.size());
-
                 XY last = node[startX][startY];
                 path.add(current);
                 while (cameFrom.containsKey(current)) {
@@ -72,8 +68,6 @@ public class Seeker {
 
                 entity.dx = last.x - startX;
                 entity.dy = last.y - startY;
-
-                //System.out.println("Found path: " + entity.dx + ", " + entity.dy);
 
                 success = true;
                 break;
