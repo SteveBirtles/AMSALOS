@@ -245,14 +245,12 @@ public class ServerEntity extends ClientEntity {
                 if (l > time) time = l;
             }
 
-            while (true) {
-
-                int currentX = e.status.get(time).x;
-                int currentY = e.status.get(time).y;
-                if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
-                    treasureMap[currentX][currentY] = e.getId();
-                }
+            int currentX = e.status.get(time).x;
+            int currentY = e.status.get(time).y;
+            if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
+                treasureMap[currentX][currentY] = e.getId();
             }
+
         }
 
         return treasureMap;
