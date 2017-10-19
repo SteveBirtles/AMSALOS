@@ -560,7 +560,7 @@ public class GameServer extends AbstractHandler {
 
             int entityMap[][] = ServerEntity.generateCollisionMap(worldEntities, false);
 
-            boolean foe = (type >= 17 && type <= 32);
+            boolean foe = (type >= 17 && type <= 128);
 
             int healthBias = foe ? 10 : 250;
 
