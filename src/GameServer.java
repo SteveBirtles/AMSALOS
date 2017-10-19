@@ -63,8 +63,8 @@ public class GameServer extends AbstractHandler {
                 }
             }
 
-            maxPowerups = playerCount * 25;
-            maxEnemies = playerCount * 25;
+            maxPowerups = playerCount * 25 + 75;
+            maxEnemies = playerCount * 25 + 75;
 
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
@@ -87,7 +87,7 @@ public class GameServer extends AbstractHandler {
                     break;
                 case 1:
                     if (enemyCount < maxEnemies) {
-                        createEntity(screen, rnd.nextInt(16) + 17, 3);
+                        createEntity(screen, rnd.nextInt(20) + 17, 3);
                     }
                     break;
             }

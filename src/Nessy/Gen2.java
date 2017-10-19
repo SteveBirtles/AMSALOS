@@ -30,7 +30,7 @@ public class Gen2{
         Random rand=new Random(seed);
 
         //Initialise all cells as non-walkable
-        for(int i=0;i<width;i++)for(int j=0;j<height;j++)cells[i][j]=128;
+        for(int i=0;i<width;i++)for(int j=0;j<height;j++)cells[i][j]=144;
 
         //Select (biased) random coordinates for cavern centers and store coordinates
         for(int x=0;x<width;x++){
