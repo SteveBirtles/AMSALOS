@@ -294,7 +294,19 @@ public class GameServer extends AbstractHandler {
                                 if (e.status.keySet().contains(last) && e2.status.keySet().contains(last2)) {
                                     if (e.status.get(last).x == e2.status.get(last2).x && e.status.get(last).y == e2.status.get(last2).y) {
                                         expired.add(e2);
-                                        e.status.get(last).score += 10;
+                                        if (e2.getType() == 131 || e2.getType() == 134) {
+                                            e.status.get(last).score += 100;
+                                        } else {
+                                            e.status.get(last).score += 10;
+                                        }
+
+                                        if (e2.getType() == 133) {
+                                            e.status.get(last).health += 0.25;
+                                            if (e.status.get(last).health > 1) {
+                                                e.status.get(last).health = 1;
+                                            }
+                                        }
+
                                     }
                                 }
                             }
@@ -562,7 +574,7 @@ public class GameServer extends AbstractHandler {
 
             boolean foe = (type >= 17 && type <= 128);
 
-            int healthBias = foe ? 10 : 250;
+            int healthBias = foe ? 10 : (250 + rnd.nextInt(100));
 
             newE = new ServerEntity(type, healthBias, foe);
             newE.setAiType(aiType);

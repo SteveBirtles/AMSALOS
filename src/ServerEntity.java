@@ -67,7 +67,7 @@ public class ServerEntity extends ClientEntity {
 
     public void setSkill(int skill) {
         this.skill = skill;
-        if (skill == 1) healthScale = 333;
+        if (skill == 1) healthScale *= 1.33333;
     }
     public int getSkill() { return this.skill; }
 
