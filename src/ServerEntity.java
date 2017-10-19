@@ -214,7 +214,7 @@ public class ServerEntity extends ClientEntity {
                             if (l > time) time = l;
                         }
                         if (time == 0) {
-                            System.out.println("Unable to add entitiy to collision map, type " + e.getType());
+                            //System.out.println("Unable to add entitiy to collision map, type " + e.getType());
                             break;
                         }
                         continue;
