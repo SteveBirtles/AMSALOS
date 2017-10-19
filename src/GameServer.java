@@ -129,7 +129,7 @@ public class GameServer extends AbstractHandler {
                             if (e.getFoe()) e.tombstoneAge++;
                             e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
 
-                        } else if (e.adjacentAttackers > 0 && !(e.getSkill() == 3)) {
+                        } else if (e.adjacentAttackers > 0 && !(e.getSkill() == 3 && e.status.get(last).health < 0.25)) {
 
                             e.status.put(future, new EntityStatus(currentX, currentY, e.status.get(last)));
                             e.status.get(future).pause = 0;
