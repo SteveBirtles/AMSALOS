@@ -90,10 +90,7 @@ public class ServerEntity extends ClientEntity {
                     if (map[u][v] % 256 >= 128) {
                         vicinity[i][j] = 1;
                     } else if (entityMap[u][v] != 0 && entityMap[u][v] != getId()) {
-                        if (entityMap[u][v] >= 128) {
-                            vicinity[i][j] = 4;
-                        }
-                        else if (entityMap[u][v] > 0) {
+                        if (entityMap[u][v] > 0) {
                             vicinity[i][j] = 2;
                         }
                         else {
@@ -132,68 +129,77 @@ public class ServerEntity extends ClientEntity {
 
     public void calculateAdjacentEntities(int[][] entityMap) {
 
-        long time = 0;
-        for (long l: status.keySet()) {
-            if (l > time) time = l;
-        }
+//        long time = 0;
+//        for (long l: status.keySet()) {
+//            if (l > time) time = l;
+//        }
 
         adjacentFriends = 0;
         adjacentFoes = 0;
 
-        if (status.containsKey(time)) {
+        //if (status.containsKey(time)) {
 
-            int currentX = status.get(time).x;
-            int currentY = status.get(time).y;
+        int currentX = -1; // = status.get(time).x;
+        int currentY = -1; // = status.get(time).y;
 
-            if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
-                    && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
-                if (entityMap[currentX - 1][currentY] > 0) {
-                    if (entityMap[currentX - 1][currentY] <= 128)
-                        adjacentFriends++;
-                } else if (entityMap[currentX - 1][currentY] < 0) {
-                    //System.out.println("adjacentFoes++ to left");
-                    adjacentFoes++;
-                }
-            }
-
-            if (currentY > 0 && entityMap[currentX][currentY - 1] != 0
-                    && Math.abs(entityMap[currentX][currentY - 1]) != getId()) {
-                if (entityMap[currentX][currentY - 1] > 0) {
-                    if (entityMap[currentX][currentY - 1] <= 128)
-                        adjacentFriends++;
-                } else if (entityMap[currentX][currentY - 1] < 0) {
-                    //System.out.println("adjacentFoes++ to up");
-                    adjacentFoes++;
-                }
-            }
-
-            if (currentX < GameServer.MAX_X - 1 && entityMap[currentX + 1][currentY] != 0
-                    && Math.abs(entityMap[currentX + 1][currentY]) != getId()) {
-                if (entityMap[currentX + 1][currentY] > 0) {
-                    if (entityMap[currentX + 1][currentY] <= 128)
-                        adjacentFriends++;
-                } else if (entityMap[currentX + 1][currentY] < 0) {
-                    //System.out.println("adjacentFoes++ to right");
-                    adjacentFoes++;
-                }
-            }
-
-            if (currentY < GameServer.MAX_Y - 1 && entityMap[currentX][currentY + 1] != 0
-                    && Math.abs(entityMap[currentX][currentY + 1]) != getId()) {
-                if (entityMap[currentX][currentY + 1] > 0) {
-                    if (entityMap[currentX][currentY + 1] <= 128)
-                        adjacentFriends++;
-                } else if (entityMap[currentX][currentY + 1] < 0) {
-                    //System.out.println("adjacentFoes++ to down");
-                    adjacentFoes++;
+        for (int x = 0; x < GameServer.MAX_X; x++) {
+            for (int y = 0; y < GameServer.MAX_Y; y++) {
+                if (Math.abs(entityMap[x][y]) == getId()) {
+                    currentX = x;
+                    currentY = y;
+                    break;
                 }
             }
         }
 
+        if (currentX > 0 && entityMap[currentX - 1][currentY] != 0
+                && Math.abs(entityMap[currentX - 1][currentY]) != getId()) {
+            if (entityMap[currentX - 1][currentY] > 0) {
+                //if (entityMap[currentX - 1][currentY] <= 128)
+                    adjacentFriends++;
+            } else if (entityMap[currentX - 1][currentY] < 0) {
+                //System.out.println("adjacentFoes++ to left");
+                adjacentFoes++;
+            }
+        }
+
+        if (currentY > 0 && entityMap[currentX][currentY - 1] != 0
+                && Math.abs(entityMap[currentX][currentY - 1]) != getId()) {
+            if (entityMap[currentX][currentY - 1] > 0) {
+                //if (entityMap[currentX][currentY - 1] <= 128)
+                    adjacentFriends++;
+            } else if (entityMap[currentX][currentY - 1] < 0) {
+                //System.out.println("adjacentFoes++ to up");
+                adjacentFoes++;
+            }
+        }
+
+        if (currentX < GameServer.MAX_X - 1 && entityMap[currentX + 1][currentY] != 0
+                && Math.abs(entityMap[currentX + 1][currentY]) != getId()) {
+            if (entityMap[currentX + 1][currentY] > 0) {
+                //if (entityMap[currentX + 1][currentY] <= 128)
+                    adjacentFriends++;
+            } else if (entityMap[currentX + 1][currentY] < 0) {
+                //System.out.println("adjacentFoes++ to right");
+                adjacentFoes++;
+            }
+        }
+
+        if (currentY < GameServer.MAX_Y - 1 && entityMap[currentX][currentY + 1] != 0
+                && Math.abs(entityMap[currentX][currentY + 1]) != getId()) {
+            if (entityMap[currentX][currentY + 1] > 0) {
+                //if (entityMap[currentX][currentY + 1] <= 128)
+                    adjacentFriends++;
+            } else if (entityMap[currentX][currentY + 1] < 0) {
+                //System.out.println("adjacentFoes++ to down");
+                adjacentFoes++;
+            }
+        }
+
+
         //System.out.println("Foes: " + adjacentFoes + " Friends: " + adjacentFriends);
 
         adjacentAttackers = getFoe() ? adjacentFriends : adjacentFoes;
-
     }
 
 
@@ -266,22 +272,34 @@ public class ServerEntity extends ClientEntity {
                 if (l > time) time = l;
             }
 
-            if (!e.status.containsKey(time)) continue;
+            //if (!e.status.containsKey(time)) continue;
             if (e.status.get(time).health <= 0) continue;
 
-            if (e.status.containsKey(time)) {
+            while (true) {
+
+                //if (e.status.containsKey(time)) {
                 int currentX = e.status.get(time).x;
                 int currentY = e.status.get(time).y;
                 if (currentX >= 0 && currentY >= 0 && currentX < GameServer.MAX_X && currentY < GameServer.MAX_Y) {
                     if (collisionMap[currentX][currentY] != 0) {
-                        System.out.println("Entity collision error (" + currentX + ", " + currentY + ") @" + time + ": Entities " + e.getId() + " and " + collisionMap[currentX][currentY] + ".");
+                        long lastTime = time;
+                        time = 0;
+                        for (long l : e.status.keySet()) {
+                            if (l >= lastTime) continue;
+                            if (l > time) time = l;
+                        }
+                        if (time == 0) {
+                            System.out.println("Unable to add entitiy to collision map, type " + e.getType());
+                            break;
+                        }
+                        continue;
                     }
-                    if (collisionMap[currentX][currentY] == 0) {
+                    else {
                         collisionMap[currentX][currentY] = (e.getFoe() ? -1 : 1) * e.getId();
-                        //entityDone.add(e.getId());
+                        break;
                     }
-                } else {
                 }
+                //}
             }
         }
 
