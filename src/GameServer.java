@@ -24,10 +24,11 @@ public class GameServer extends AbstractHandler {
     public final static int TOMBSTONE_LIFETIME = 40;
     public final static int VICINITY_SIZE = 17;
     public final static int VICINITY_CENTRE = 8;
-
-    public final static int MAX_POWERUPS = 200;
-    public final static int MAX_ENEMIES = 200;
     public final static int MAX_PLAYERS = 200;
+
+    public static int maxPowerups = 200;
+    public static int maxEnemies = 200;
+
 
     public long mapTimeStamp;
 
@@ -62,6 +63,9 @@ public class GameServer extends AbstractHandler {
                 }
             }
 
+            maxPowerups = playerCount * 25;
+            maxEnemies = playerCount * 25;
+
             Random rnd = new Random();
             int screen = rnd.nextInt(20) + 1;
             int goodOrBad = rnd.nextInt(2);
@@ -76,14 +80,14 @@ public class GameServer extends AbstractHandler {
                         }
                     }
                     else {
-                        if (powerUpCount < MAX_POWERUPS) {
+                        if (powerUpCount < maxPowerups) {
                             createEntity(screen, rnd.nextInt(9) + 129, 0);
                         }
                     }
                     break;
                 case 1:
-                    if (enemyCount < MAX_ENEMIES) {
-                        createEntity(screen, rnd.nextInt(12) + 17, 3);
+                    if (enemyCount < maxEnemies) {
+                        createEntity(screen, rnd.nextInt(16) + 17, 3);
                     }
                     break;
             }
