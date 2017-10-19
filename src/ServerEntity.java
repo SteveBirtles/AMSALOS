@@ -37,7 +37,7 @@ public class ServerEntity extends ClientEntity {
         for (int i = 0; i < GameServer.VICINITY_SIZE; i++) {
             for (int j = 0; j < GameServer.VICINITY_SIZE; j++) {
                 if (i == GameServer.VICINITY_CENTRE && j == GameServer.VICINITY_CENTRE) continue;
-                if (vicinity[i][j] == 3 || (vicinity[i][j] == 4 && getType() == 4)) {
+                if ((getType() != 4 && vicinity[i][j] == 3) || (getType() == 4 && vicinity[i][j] == 4)) {
                     double distance = Math.abs(i - GameServer.VICINITY_CENTRE) + Math.abs(j - GameServer.VICINITY_CENTRE);
                     if (distance < bestDistance) {
                         bestDistance = distance;
