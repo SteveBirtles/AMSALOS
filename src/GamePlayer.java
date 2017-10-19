@@ -3,6 +3,9 @@ import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,6 +15,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -27,13 +31,41 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 
 public class GamePlayer extends Application {
+
+    private static class Score implements Comparator<Score> {
+        public int score;
+        public String name;
+        public boolean alive;
+
+        public Score() {}
+
+        public Score(int score, String name, boolean alive) {
+            this.score = score;
+            this.name = name;
+            this.alive = alive;
+        }
+
+        @Override
+        public String toString() {
+            return name + " - " + score + (alive ? "*" : "");
+        }
+
+        @Override
+        public int compare(Score s1, Score s2) {
+            return s2.score - s1.score;
+        }
+    }
 
     public static final int WINDOW_WIDTH = 1920;
     public static final int WINDOW_HEIGHT = 1080;
@@ -57,6 +89,7 @@ public class GamePlayer extends Application {
     public static Button[] skillButtons;
 
     public static TextField nameBox;
+    public static ListView<Score> highScoreList;
 
     public static void main(String[] args) {
         fullscreen = true;
@@ -119,7 +152,7 @@ public class GamePlayer extends Application {
         scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> keysPressed.remove(event.getCode()));
 
         Image sprites = new Image("resources/all_sprites.png");
-        Image tiles = new Image("resources/all_tiles.png");
+        //Image tiles = new Image("resources/all_tiles.png");
 
         BorderPane borderPane = new BorderPane();
         borderPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -162,12 +195,20 @@ public class GamePlayer extends Application {
             screenButtons.getChildren().add(screenButton);
         }
 
+        HBox highScores = new HBox();
+        highScores.setPadding(new Insets(32));
+
+        highScoreList = new ListView<>();
+        highScores.getChildren().add(highScoreList);
+        borderPane.setRight(highScores);
+        borderPane.setAlignment(highScores, Pos.TOP_RIGHT);
+
         VBox miniMapHBox = new VBox();
         miniMapHBox.setSpacing(5);
         miniMapHBox.getChildren().add(screenButtons);
         miniMapHBox.getChildren().add(miniMapCanvas);
         miniMapHBox.setMaxWidth(1604);
-            borderPane.setBottom(miniMapHBox);
+        borderPane.setBottom(miniMapHBox);
         borderPane.setAlignment(miniMapHBox, Pos.BOTTOM_CENTER);
 
         VBox entityView = new VBox();
@@ -343,10 +384,26 @@ public class GamePlayer extends Application {
 
         Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(256),
-                ae -> map = ClientShared.getUpdate(serverAddress, map, 0, true, currentEntities)));
+                ae -> update()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
+    }
+
+    public static void update() {
+        map = ClientShared.getUpdate(serverAddress, map, 0, true, currentEntities);
+        ArrayList<Score> currentHighScores = new ArrayList<>();
+        for (ClientEntity e: currentEntities) {
+            if (!e.getName().equals("")) {
+                long last = 0;
+                for (long l : e.status.keySet()) {
+                    if (l > last) last = l;
+                }
+                currentHighScores.add(new Score(e.status.get(last).score, e.getName(), e.status.get(last).health > 0));
+            }
+        }
+        Collections.sort(currentHighScores, new Score());
+        highScoreList.setItems(FXCollections.observableArrayList(currentHighScores));
     }
 
 }
