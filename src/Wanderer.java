@@ -44,23 +44,23 @@ public class Wanderer {
     public static XY calculateNext(ServerEntity entity, int[][] vicinity) {
 
         boolean[] clearDirections = new boolean[4];
-        clearDirections[0] = vicinity[GameServer.VICINITY_CENTRE][GameServer.VICINITY_CENTRE - 1] == 0;
-        clearDirections[1] = vicinity[GameServer.VICINITY_CENTRE + 1][GameServer.VICINITY_CENTRE] == 0;
-        clearDirections[2] = vicinity[GameServer.VICINITY_CENTRE][GameServer.VICINITY_CENTRE + 1] == 0;
-        clearDirections[3] = vicinity[GameServer.VICINITY_CENTRE - 1][GameServer.VICINITY_CENTRE] == 0;
+        clearDirections[0] = vicinity[GameServer.VICINITY_CENTRE][GameServer.VICINITY_CENTRE - 1] <= 0;
+        clearDirections[1] = vicinity[GameServer.VICINITY_CENTRE + 1][GameServer.VICINITY_CENTRE] <= 0;
+        clearDirections[2] = vicinity[GameServer.VICINITY_CENTRE][GameServer.VICINITY_CENTRE + 1] <= 0;
+        clearDirections[3] = vicinity[GameServer.VICINITY_CENTRE - 1][GameServer.VICINITY_CENTRE] <= 0;
         int noOfClearDirections = noOfClearDirections(clearDirections);
 
         boolean[] clearDiagonals = new boolean[4];
-        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && vicinity[GameServer.VICINITY_CENTRE + 1][GameServer.VICINITY_CENTRE - 1] == 0;
-        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && vicinity[GameServer.VICINITY_CENTRE + 1][GameServer.VICINITY_CENTRE + 1] == 0;
-        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && vicinity[GameServer.VICINITY_CENTRE - 1][GameServer.VICINITY_CENTRE + 1] == 0;
-        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && vicinity[GameServer.VICINITY_CENTRE - 1][GameServer.VICINITY_CENTRE - 1] == 0;
+        clearDiagonals[0] = clearDirections[0] && clearDirections[1] && vicinity[GameServer.VICINITY_CENTRE + 1][GameServer.VICINITY_CENTRE - 1] <= 0;
+        clearDiagonals[1] = clearDirections[1] && clearDirections[2] && vicinity[GameServer.VICINITY_CENTRE + 1][GameServer.VICINITY_CENTRE + 1] <= 0;
+        clearDiagonals[2] = clearDirections[2] && clearDirections[3] && vicinity[GameServer.VICINITY_CENTRE - 1][GameServer.VICINITY_CENTRE + 1] <= 0;
+        clearDiagonals[3] = clearDirections[3] && clearDirections[0] && vicinity[GameServer.VICINITY_CENTRE - 1][GameServer.VICINITY_CENTRE - 1] <= 0;
         int noOfClearDiagonals = noOfClearDirections(clearDiagonals);
 
         int target_x = GameServer.VICINITY_CENTRE + entity.dx;
         int target_y = GameServer.VICINITY_CENTRE + entity.dy;
 
-        if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] != 0 || (entity.dx == 0 && entity.dy == 0)) {
+        if ((noOfClearDirections == 3 && noOfClearDiagonals < 3) || vicinity[target_x][target_y] > 0 || (entity.dx == 0 && entity.dy == 0)) {
             if (noOfClearDirections > 1) {
                 if (entity.dy > 0) clearDirections[0] = false;
                 if (entity.dx < 0) clearDirections[1] = false;

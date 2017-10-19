@@ -100,7 +100,7 @@ public class Seeker {
                 }
 
                 if (!(neighbourX == endX && neighbourY == endY)) {
-                    if (vicinity[neighbourX][neighbourY] > 0 && vicinity[neighbourX][neighbourY] < 4) continue;
+                    if (vicinity[neighbourX][neighbourY] > 0) continue;
                 }
 
                 XY neighbour = node[neighbourX][neighbourY];
