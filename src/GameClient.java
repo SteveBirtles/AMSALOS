@@ -51,6 +51,7 @@ public class GameClient extends Application {
     public static HashMap<Integer, Integer> lastY0 = new HashMap<>();
 
     public static void main(String[] args) {
+        if (args.length > 0) serverAddress = args[0];
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.contains("comp1-") && !host.contains("reg")) {

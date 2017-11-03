@@ -88,6 +88,7 @@ public class GamePlayer extends Application {
 
     public static void main(String[] args) {
         fullscreen = true;
+        if (args.length > 0) serverAddress = args[0];
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.equals("comp1-reg")) {
