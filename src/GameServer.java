@@ -678,7 +678,7 @@ public class GameServer extends AbstractHandler {
     public static void main(String[] args) throws Exception {
 
         GameServer gameServer = new GameServer();
-        gameServer.createMap(1);
+        gameServer.createMap(0);
         gameServer.startTimers();
 
         Server server = new Server(8081);
