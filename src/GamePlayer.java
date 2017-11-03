@@ -52,7 +52,7 @@ public class GamePlayer extends Application {
 
         @Override
         public String toString() {
-            return name + "   " + score;
+            return score + ": " + name;
         }
 
         @Override
@@ -88,6 +88,7 @@ public class GamePlayer extends Application {
 
     public static void main(String[] args) {
         fullscreen = true;
+        if (args.length > 0) serverAddress = args[0];
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.equals("comp1-reg")) {
@@ -388,13 +389,13 @@ public class GamePlayer extends Application {
 
                     if (keysPressed.contains(KeyCode.CONTROL) && keysPressed.contains(KeyCode.ALT)) {
                         if (k == KeyCode.Z) {
-                            ClientShared.requestPost(serverAddress, "reset=1");
+                            //ClientShared.requestPost(serverAddress, "reset=1");
                         }
                         else if (k == KeyCode.X) {
-                            ClientShared.requestPost(serverAddress, "reset=2");
+                            //ClientShared.requestPost(serverAddress, "reset=2");
                         }
                         else if (k == KeyCode.C) {
-                            ClientShared.requestPost(serverAddress, "reset=3");
+                            //ClientShared.requestPost(serverAddress, "reset=3");
                         }
                     }
                 }
@@ -493,6 +494,7 @@ public class GamePlayer extends Application {
                             "-fx-text-fill: darkgoldenrod;");
                 }
                 highScoreLabel[s].setText(currentHighScores.get(s - 1).toString());
+                highScoreLabel[s].setMaxWidth(250);
             }
             else {
                 highScoreLabel[s].setText("");
