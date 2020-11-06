@@ -55,7 +55,7 @@ public class GameClient extends Application {
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
             if (host.contains("comp1-") && !host.contains("reg")) {
-                serverAddress = "services.farnborough.ac.uk";
+                serverAddress = "172.16.0.123";
                 fullscreen = true;
             }
         } catch (UnknownHostException e) {

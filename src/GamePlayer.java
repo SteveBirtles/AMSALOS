@@ -91,8 +91,8 @@ public class GamePlayer extends Application {
         if (args.length > 0) serverAddress = args[0];
         try {
             String host = InetAddress.getLocalHost().getHostName().toLowerCase();
-            if (host.equals("comp1-reg")) {
-                serverAddress = "services.farnborough.ac.uk";
+            if (host.equals("Comp1-Reg")) {
+                serverAddress = "172.16.0.123";
                 //fullscreen = false;
             }
         } catch (UnknownHostException e) {
